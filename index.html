@@ -7850,18 +7850,29 @@ function applyFilters() {
           famVisible++;
           total++;
           sc[sen] = (sc[sen]||0)+1;
-          // highlight search
+          // highlight search - preserve <a> links
           if (q) {
             row.querySelectorAll('.name-col,.title-col').forEach(function(td) {
-              const orig = td.textContent;
               try {
                 const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')','gi');
-                td.innerHTML = orig.replace(re,'<mark>$1</mark>');
+                // For name-col: highlight inside <a> if exists, else directly
+                const a = td.querySelector('a');
+                if (a) {
+                  const orig = a.textContent;
+                  a.innerHTML = orig.replace(re,'<mark>$1</mark>');
+                } else {
+                  const orig = td.textContent;
+                  td.innerHTML = orig.replace(re,'<mark>$1</mark>');
+                }
               } catch(e) {}
             });
           } else {
+            // Restore: remove marks but keep <a> links intact
             row.querySelectorAll('.name-col,.title-col').forEach(function(td) {
-              td.textContent = td.textContent;
+              const marks = td.querySelectorAll('mark');
+              marks.forEach(function(mark) {
+                mark.replaceWith(document.createTextNode(mark.textContent));
+              });
             });
           }
         }
