@@ -98,6 +98,28 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
   .name-col{font-size:14px;font-weight:800;padding-top:8px}
   .person-row td:last-child{padding-bottom:8px}
 }
+
+/* Company description */
+.co-description {
+  font-size: 10.5px;
+  color: #64748b;
+  margin-top: 3px;
+  line-height: 1.35;
+  font-style: italic;
+  direction: rtl;
+  text-align: right;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  max-height: 2.8em;
+}
+.co-description.expanded {
+  -webkit-line-clamp: unset;
+  max-height: none;
+}
 </style>
 </head>
 <body>
@@ -156,13 +178,12 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="main" id="mainContent">
 <div class="family-section" data-fam="ביג טק">
 <div class="family-header"><span class="family-dot" style="background:#1d4ed8"></span><span class="family-title">ביג טק</span><span class="family-count fam-count">114 אנשים</span></div>
-
 <details class="company-card" data-fam="ביג טק">
 <summary class="company-toggle">
 <div class="co-logo">M</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Microsoft</span><span class="co-count co-badge">18</span></div>
-</div>
+<div class="co-description">פלטפורמות תוכנה, ענן ופרודוקטיביות ארגונית — Microsoft 365, Azure, Windows ו-Copilot.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -193,7 +214,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">I</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Israeli Military Intelligence - Unit 8200</span><span class="co-count co-badge">39</span></div>
-</div>
+<div class="co-description">יחידת האיסוף המרכזית במנהלת המודיעין בצה"ל — פיתוח והפעלת כלי SIGINT וסייבר למודיעין בזמן אמת.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -224,7 +245,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">G</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Google</span><span class="co-count co-badge">16</span></div>
-</div>
+<div class="co-description">חיפוש, פרסום דיגיטלי, ענן (Google Cloud) וכלים ארגוניים (Google Workspace) לצרכנים ועסקים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -253,7 +274,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">A</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Apple</span><span class="co-count co-badge">8</span></div>
-</div>
+<div class="co-description">מכשירי צרכן ופלטפורמות תוכנה — iPhone, Mac, iPad, Apple Watch ושירותים כמו iCloud ו-App Store.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -274,7 +295,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">M</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Meta</span><span class="co-count co-badge">7</span></div>
-</div>
+<div class="co-description">פלטפורמות רשת חברתית ומסרים (Facebook, Instagram, WhatsApp) וחומרה/תוכנה ל-AR/VR.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -294,7 +315,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">N</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">NVIDIA</span><span class="co-count co-badge">7</span></div>
-</div>
+<div class="co-description">מחשוב מואץ ל-AI — GPU, DGX Cloud ותשתיות לאימון מודלים ו-Generative AI לארגונים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -314,7 +335,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">O</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Oracle</span><span class="co-count co-badge">5</span></div>
-</div>
+<div class="co-description">שירותי ענן ותשתיות גלובליות (OCI) — Hybrid, Edge ו-Multicloud לעומסי עבודה ארגוניים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -441,7 +462,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="ביג טק">
 <summary class="company-toggle">
 <div class="co-logo">C</div>
@@ -492,7 +512,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">S</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Silverfort</span><span class="co-count co-badge">7</span></div>
-</div>
+<div class="co-description">פלטפורמת Unified Identity Protection — הגנת זהויות ואכיפת MFA/Zero Trust ללא סוכנים בסביבות On-Prem וענן.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -512,7 +532,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">P</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Palo Alto Networks</span><span class="co-count co-badge">6</span></div>
-</div>
+<div class="co-description">פלטפורמת אבטחת סייבר ארגונית — Prisma Cloud ו-Cortex לאיחוד הגנת רשת, ענן ו-SecOps.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -531,7 +551,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">C</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Claroty</span><span class="co-count co-badge">5</span></div>
-</div>
+<div class="co-description">פלטפורמת אבטחת OT/ICS — מיפוי וניטור נכסים תעשייתיים להגנה על תפעול קריטי בייצור ואנרגיה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -549,7 +569,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">V</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Varonis</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">פלטפורמת אבטחת נתונים — מיפוי הרשאות, סיווג מידע רגיש וצמצום חשיפה אוטומטי לאכיפת least privilege.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -566,7 +586,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">S</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">SentinelOne</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">פלטפורמת XDR/EDR (Singularity) — זיהוי ותגובה אוטומטית לאיומים על תחנות קצה לצוותי אבטחה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -655,7 +675,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">C</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Check Point</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">פלטפורמת Infinity לאבטחת סייבר — Quantum, CloudGuard ו-Harmony להגנה מאוחדת מבוססת AI.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -664,7 +684,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <tr class="person-row" data-co="Check Point" data-name="Roi Karo" data-sen="C-Level" data-title="Chief Strategy Officer"><td class="name-col"><a href="https://www.linkedin.com/in/roi-karo" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Roi Karo</a></td><td class="title-col">Chief Strategy Officer</td><td><span class="badge" style="background:#dc2626">C-Level</span></td></tr><tr class="person-row" data-co="Check Point" data-name="Ofir Nissan" data-sen="Student" data-title="Student Software Developer"><td class="name-col"><a href="https://www.linkedin.com/in/ofir-nissan" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Ofir Nissan</a></td><td class="title-col">Student Software Developer</td><td><span class="badge" style="background:#7c3aed">Student</span></td></tr></tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="סייבר">
 <summary class="company-toggle">
 <div class="co-logo">T</div>
@@ -861,7 +880,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="סייבר">
 <summary class="company-toggle">
 <div class="co-logo">F</div>
@@ -1038,7 +1056,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">E</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">eToro</span><span class="co-count co-badge">5</span></div>
-</div>
+<div class="co-description">פלטפורמת השקעה חברתית — CopyTrader להעתקת תיקי משקיעים ו-Smart Portfolios לקמעונאיים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1056,7 +1074,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">P</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Payoneer</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">פינטק לתשלומים חוצי גבולות — ארנק רב-מטבעי לקבלת תשלומים ותשלום לספקים לעסקים קטנים ובינוניים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1073,7 +1091,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">B</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Bank Leumi בנק לאומי</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">קבוצת בנקאות — קמעונאות, משכנתאות, בנקאות עסקית ושוקי הון, כולל Pepper ומשכנתא דיגיטלית.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1090,7 +1108,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">M</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Melio</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">פלטפורמת תשלומי B2B — בחירת אמצעי תשלום לעסקים עם קבלת ACH/צ'ק גם ללא כרטיסי אשראי.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1106,7 +1124,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">P</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Pagaya</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">רשת AI לאשראי — ניתוח בקשות הלוואה בזמן אמת וחיבור מלווים למשקיעים מוסדיים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1122,7 +1140,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">B</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Bank Hapoalim בנק הפועלים</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">קבוצת בנקאות — בנקאות קמעונאית, תאגידית ושווקים פיננסיים בישראל ובחו"ל.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1282,7 +1300,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">A</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">AI21 Labs</span><span class="co-count co-badge">7</span></div>
-</div>
+<div class="co-description">מודלי שפה גדולים (Jurassic) ו-API לפיתוח יישומי Generative AI — סיכום, כתיבה ו-Question Answering.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1302,7 +1320,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">M</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Mobileye</span><span class="co-count co-badge">5</span></div>
-</div>
+<div class="co-description">מערכות ADAS ונהיגה אוטונומית ליצרני רכב — Mobileye Drive מבוסס ראייה ממוחשבת ושילוב חיישנים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1320,7 +1338,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">A</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Akamai Technologies</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">פלטפורמת Connected Cloud — CDN, אבטחת סייבר ומחשוב Edge לביצועים והגנה קרוב למשתמש.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1331,8 +1349,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
-
 <details class="company-card" data-fam="בינה מלאכותית">
 <summary class="company-toggle">
 <div class="co-logo">I</div>
@@ -1580,7 +1596,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">M</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Maccabi Health care Services</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">קופת חולים — רשת מרפאות, שירותים דיגיטליים וטיפול רצף רפואי בקהילה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1596,7 +1612,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">T</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Tel Aviv Medical Center</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">מרכז רפואי אקדמי ממשלתי (איכילוב) — טיפול אקוטי מתקדם, מחקר קליני והוראה עם אוניברסיטת ת"א.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1757,7 +1773,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">T</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Taboola</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">פלטפורמת Performance Advertising — הנעת המרות דרך AI ורשת הפצה רחבה של אתרי תוכן ו-OEMs.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1774,7 +1790,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">F</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Fiverr</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">פלטפורמת פרילנס דיגיטלית — חיבור עסקים לפרילנסרים במאות כישורים כולל AI, פיתוח ושיווק.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1807,7 +1823,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">M</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Moon Active</span><span class="co-count co-badge">5</span></div>
-</div>
+<div class="co-description">פיתוח והפעלת משחקי מובייל (Coin Master) עם Live Operations למיליוני שחקנים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1825,7 +1841,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">P</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Playtika</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">גיימינג מובייל Free-to-play עם LiveOps מתקדם — ניתוח נתונים לחוויות משחק מותאמות.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1859,7 +1875,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">T</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Tel Aviv University</span><span class="co-count co-badge">12</span></div>
-</div>
+<div class="co-description">אוניברסיטת מחקר מובילה — מאות פרויקטי מחקר בניהול הרשות למחקר של האוניברסיטה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1884,7 +1900,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">W</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Weizmann Institute of Science</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">מוסד מחקר בסיסי רב-תחומי — מאות קבוצות מחקר במדעי הטבע והמדעים המדויקים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -1966,7 +1982,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אקדמיה">
 <summary class="company-toggle">
 <div class="co-logo">B</div>
@@ -2000,7 +2015,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">T</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">The Hebrew University of Jerusalem</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">אוניברסיטת מחקר והוראה — מחקר, מענקים ושיתופי פעולה דרך הרשות למחקר ופיתוח.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2009,7 +2024,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <tr class="person-row" data-co="The Hebrew University of Jerusalem" data-name="Reut Shafrir" data-sen="Unknown" data-title="Applied Sociological Research | Ph.D. Candidate"><td class="name-col">Reut Shafrir</td><td class="title-col">Applied Sociological Research | Ph.D. Candidate</td><td><span class="badge" style="background:#9ca3af">Unknown</span></td></tr><tr class="person-row" data-co="The Hebrew University of Jerusalem" data-name="Sapir Lifshitz" data-sen="Student" data-title="Student"><td class="name-col"><a href="https://www.linkedin.com/in/sapir-lifshitz-64858415b" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Sapir Lifshitz</a></td><td class="title-col">Student</td><td><span class="badge" style="background:#7c3aed">Student</span></td></tr></tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אקדמיה">
 <summary class="company-toggle">
 <div class="co-logo">מ</div>
@@ -2069,13 +2083,12 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </div>
 <div class="family-section" data-fam="ממשל וביטחון">
 <div class="family-header"><span class="family-dot" style="background:#475569"></span><span class="family-title">ממשל וביטחון</span><span class="family-count fam-count">27 אנשים</span></div>
-
 <details class="company-card" data-fam="ממשל וביטחון">
 <summary class="company-toggle">
 <div class="co-logo">E</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Elbit Systems Israel</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">מערכות ביטחוניות רב-תחומיות — Land C4ISR, פיקוד ושליטה, תקשורת וחיישנים לכוחות ביטחון.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2227,7 +2240,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="ממשל וביטחון">
 <summary class="company-toggle">
 <div class="co-logo">I</div>
@@ -2270,7 +2282,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="ממשל וביטחון">
 <summary class="company-toggle">
 <div class="co-logo">F</div>
@@ -2335,7 +2346,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">D</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Deloitte</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">שירותי ייעוץ, ביקורת, מס וניהול סיכונים לארגונים — אחת מחברות ה-Big Four.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2458,7 +2469,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="ייעוץ">
 <summary class="company-toggle">
 <div class="co-logo">S</div>
@@ -2638,7 +2648,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">I</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Israel Defense Forces</span><span class="co-count co-badge">22</span></div>
-</div>
+<div class="co-description">הכוח הצבאי הלאומי של ישראל — כוחות יבשה, אוויר וים להגנת המדינה ופיתוח טכנולוגיות לחימה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2666,7 +2676,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">S</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Stealth</span><span class="co-count co-badge">20</span></div>
-</div>
+<div class="co-description">סטארטאפים בשלבי Stealth — חברות בתחילת דרכן ללא זהות פומבית, בעיקר בתחומי AI, סייבר ודאטה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2683,13 +2693,12 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <tr class="person-row" data-co="Stealth" data-name="Tom Kalir" data-sen="Founder/CEO" data-title="Co-Founder and CTO"><td class="name-col"><a href="https://www.linkedin.com/in/tom-kalir-a7339a179" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Tom Kalir</a></td><td class="title-col">Co-Founder and CTO</td><td><span class="badge" style="background:#6d28d9">Founder/CEO</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Nadav Davidyan" data-sen="Founder/CEO" data-title="Co-founder &amp; COS"><td class="name-col"><a href="https://www.linkedin.com/in/nadav-davidyan-299b20290" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Nadav Davidyan</a></td><td class="title-col">Co-founder &amp; COS</td><td><span class="badge" style="background:#6d28d9">Founder/CEO</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Eyal Meron" data-sen="Founder/CEO" data-title="Co-Founder and CEO"><td class="name-col"><a href="https://www.linkedin.com/in/eyal-meron-10a7b5203" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Eyal Meron</a></td><td class="title-col">Co-Founder and CEO</td><td><span class="badge" style="background:#6d28d9">Founder/CEO</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Oren Fine" data-sen="Founder/CEO" data-title="Co-Founder and CTO"><td class="name-col"><a href="https://www.linkedin.com/in/orenfine2021" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Oren Fine</a></td><td class="title-col">Co-Founder and CTO</td><td><span class="badge" style="background:#6d28d9">Founder/CEO</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Alon Zuckerman" data-sen="Founder/CEO" data-title="Co-Founder &amp; CTO"><td class="name-col"><a href="https://www.linkedin.com/in/alon-zuckerman" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Alon Zuckerman</a></td><td class="title-col">Co-Founder &amp; CTO</td><td><span class="badge" style="background:#6d28d9">Founder/CEO</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Tal Schneider" data-sen="Founder/CEO" data-title="Co-Founder &amp; CPO"><td class="name-col"><a href="https://www.linkedin.com/in/talschneider" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Tal Schneider</a></td><td class="title-col">Co-Founder &amp; CPO</td><td><span class="badge" style="background:#6d28d9">Founder/CEO</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Elad Tessler" data-sen="Founder/CEO" data-title="Co-Founder &amp; CEO"><td class="name-col"><a href="https://www.linkedin.com/in/elad-tessler" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Elad Tessler</a></td><td class="title-col">Co-Founder &amp; CEO</td><td><span class="badge" style="background:#6d28d9">Founder/CEO</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Tzuf Argaman" data-sen="Founder/CEO" data-title="Co-Founder"><td class="name-col"><a href="https://www.linkedin.com/in/tzuf-argaman-334b9290" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Tzuf Argaman</a></td><td class="title-col">Co-Founder</td><td><span class="badge" style="background:#6d28d9">Founder/CEO</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Tal Shaked" data-sen="VP" data-title="VP R&amp;D"><td class="name-col"><a href="https://www.linkedin.com/in/tal-shaked" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Tal Shaked</a></td><td class="title-col">VP R&amp;D</td><td><span class="badge" style="background:#ea580c">VP</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Yuval Naor" data-sen="IC" data-title="Investor"><td class="name-col"><a href="https://www.linkedin.com/in/yuval-naor" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Yuval Naor</a></td><td class="title-col">Investor</td><td><span class="badge" style="background:#2563eb">IC</span></td></tr><tr class="person-row" data-co="Stealth" data-name="Daniel Gamsu" data-sen="IC" data-title="Business Owner"><td class="name-col"><a href="https://www.linkedin.com/in/danielgamsu" onmouseout="this.style.color='#1e293b'" onmouseover="this.style.color='#0077b5'" style="color:#1e293b;text-decoration:none;font-weight:700;" target="_blank">Daniel Gamsu</a></td><td class="title-col">Business Owner</td><td><span class="badge" style="background:#2563eb">IC</span></td></tr></tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">W</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">WSC Sports</span><span class="co-count co-badge">5</span></div>
-</div>
+<div class="co-description">פלטפורמת AI ליצירה אוטומטית של וידאו ספורט — היילייטס ותכנים מרובי-ערוצים לבעלי זכויות וליגות.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2707,7 +2716,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">S</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Sygnia</span><span class="co-count co-badge">5</span></div>
-</div>
+<div class="co-description">שירותי חקירה ותגובה לאירועי סייבר (Incident Response) — צמצום נזק, שחזור פעילות וחיזוק מוכנות.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2725,7 +2734,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">A</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Amdocs</span><span class="co-count co-badge">5</span></div>
-</div>
+<div class="co-description">תוכנות ושירותים לספקי תקשורת ומדיה — Billing, Charging וטרנספורמציה דיגיטלית למפעילי טלקום.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2761,7 +2770,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">I</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">IVIX</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">פלטפורמת AI שממירה נתונים ציבוריים למודיעין אכיפה — איתור פעילות כלכלית מוסתרת לרשויות ממשלה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2778,7 +2787,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">Y</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Yotpo</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">פלטפורמת שיווק לאיקומרס — Reviews/UGC, Loyalty ו-Referrals עם אינטגרציות לשופיפיי.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2795,7 +2804,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">B</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Baz</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">כלי AI ל-Code Review — סוכנים חכמים על Pull Requests עם Memory ממשוב לזיהוי בעיות ארכיטקטורה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2812,7 +2821,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">W</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Wix</span><span class="co-count co-badge">6</span></div>
-</div>
+<div class="co-description">פלטפורמת SaaS לבניית אתרים — eCommerce, הזמנות, Bookings ושירותים לעסקים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2829,7 +2838,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">P</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Paragon</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">פתרונות סייבר ומודיעין טכנולוגי לממשלות — כלי ניטור וסיכול איומים מתקדמים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2846,7 +2855,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">M</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">monday.com</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">Work OS לניהול עבודה No-code/Low-code — AI, CRM, Dev וService לאוטומציה ותכנון בין צוותים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2862,7 +2871,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">B</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">BlueVoyant</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">פתרונות Cyber Defense — Managed Detection and Response והפחתת סיכוני צד ג' בשרשרת אספקה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2878,7 +2887,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">B</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">BigArch</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">בוטיק ייעוץ ופיתוח ב-AI ודאטה — בניית מערכות חכמות, ארכיטקטורות ML ופיתוח מקצה לקצה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -2894,7 +2903,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">מ</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">מערך הדיגיטל הלאומי - Israel National Digital Agency</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">גוף ממשלתי שמוביל טרנספורמציה דיגיטלית במגזר הציבורי — שירותים דיגיטליים וטכנולוגיה למשרדי ממשלה.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -3211,7 +3220,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">D</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Darrow</span><span class="co-count co-badge">4</span></div>
-</div>
+<div class="co-description">פלטפורמת AI לזיהוי הזדמנויות תביעה — סריקת נתונים ציבוריים ומודיעין תיק למשרדי עורכי דין.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -3376,7 +3385,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">S</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Strauss Group</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">קבוצת מזון ומשקאות רב-קטגורית — חטיפים, חלב, קפה, ממתקים ופתרונות טיהור מים בפעילות בינלאומית.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -3446,7 +3455,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">W</div>
@@ -3475,8 +3483,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">A</div>
@@ -3659,7 +3665,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">B</div>
@@ -4883,7 +4888,7 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 <div class="co-logo">P</div>
 <div class="company-info">
 <div class="company-name-row"><span class="co-name">Plus500</span><span class="co-count co-badge">3</span></div>
-</div>
+<div class="co-description">פלטפורמות מסחר דיגיטלי — CFDs, Share Dealing, Futures ו-Options לקמעונאיים ומקצועיים.</div></div>
 <span class="toggle-arrow">›</span>
 </summary>
 <div class="company-body">
@@ -5508,7 +5513,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">L</div>
@@ -5705,7 +5709,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">A</div>
@@ -5986,7 +5989,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">N</div>
@@ -6155,7 +6157,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">L</div>
@@ -6310,7 +6311,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">O</div>
@@ -6521,7 +6521,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">I</div>
@@ -6648,7 +6647,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">W</div>
@@ -6775,7 +6773,6 @@ mark{background:#fef08a;border-radius:2px;padding:0 1px}
 </tbody></table>
 </div>
 </details>
-
 <details class="company-card" data-fam="אחר">
 <summary class="company-toggle">
 <div class="co-logo">I</div>
@@ -6999,6 +6996,14 @@ function applyFilters() {
   document.getElementById('noResults').style.display = total===0 ? 'block' : 'none';
   document.getElementById('header-sub').textContent = total + ' אנשים · ' + cos + ' חברות';
 }
+</script>
+
+<script>
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('co-description')) {
+    e.target.classList.toggle('expanded');
+  }
+});
 </script>
 </body>
 </html>
