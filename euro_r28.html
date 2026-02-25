@@ -593,17 +593,23 @@ function renderHistory(){
   ].map(([k,v,c])=>`<div class="ss">${k} <span${c?` style="color:${c}"`:''}>${v}</span></div>`).join('');
 
   const roll=p.AllH.map((_,i,a)=>i<4?null:+(a.slice(i-4,i+1).reduce((s,v)=>s+v,0)/5).toFixed(2));
+  const _xV=p.AllW.map(Number),_yV=p.AllH.map(Number);
+  const _rx=_xV.filter((_,i)=>i>=4),_ry=roll.filter(v=>v!==null).map(Number);
+  const _ya=[..._yV,..._ry,+p.FPT],_yMin=Math.floor(Math.min(..._ya,0)-1),_yMax=Math.ceil(Math.max(..._ya)+3);
   Plotly.newPlot('chart-hist',[
-    {x:p.AllW,y:p.AllH,type:'bar',name:'FPT',
-      marker:{color:p.AllH.map(v=>v>=0?'rgba(59,130,246,.6)':'rgba(239,68,68,.6)'),
-              line:{color:p.AllH.map(v=>v>=0?'#3b82f6':'#ef4444'),width:1}},
-      hovertemplate:'Round %{x}: %{y} FPT<extra></extra>'},
-    {x:p.AllW.filter((_,i)=>i>=4),y:roll.filter(v=>v!==null),type:'scatter',mode:'lines',name:'Rolling 5',
-      line:{color:'#fbbf24',width:2.5},hovertemplate:'R%{x}: %{y} (roll5)<extra></extra>'},
-    {x:[Math.min(...p.AllW),Math.max(...p.AllW)],y:[p.FPT,p.FPT],mode:'lines',name:'Season avg',
-      line:{color:'rgba(255,255,255,.25)',dash:'dot',width:1.5},hoverinfo:'skip'}
-  ],{...PLT,xaxis:{...PLT.xaxis,title:'Round',dtick:2},yaxis:{...PLT.yaxis,title:'FPT'},
-    legend:{...PLT.legend,x:.01,y:.99}},{responsive:true,displayModeBar:false});
+    {x:_xV,y:_yV,type:'bar',name:'FPT',
+      marker:{color:_yV.map(v=>v>=0?'rgba(59,130,246,.6)':'rgba(239,68,68,.6)'),
+              line:{color:_yV.map(v=>v>=0?'#3b82f6':'#ef4444'),width:1}},
+      hovertemplate:'Round %{x}: %{y:.1f} FPT<extra></extra>'},
+    {x:_rx,y:_ry,type:'scatter',mode:'lines',name:'Rolling 5',
+      line:{color:'#fbbf24',width:2.5},hovertemplate:'R%{x}: %{y:.1f} (roll5)<extra></extra>'},
+    {x:[Math.min(..._xV),Math.max(..._xV)],y:[+p.FPT,+p.FPT],mode:'lines',name:'Season avg',
+      line:{color:'rgba(255,255,255,.28)',dash:'dot',width:1.5},hoverinfo:'skip'}
+  ],{...PLT,
+    xaxis:{...PLT.xaxis,title:'Round',dtick:2,type:'linear'},
+    yaxis:{...PLT.yaxis,title:'FPT per game',type:'linear',range:[_yMin,_yMax],zeroline:true,zerolinecolor:'rgba(255,255,255,.15)',zerolinewidth:1},
+    legend:{...PLT.legend,x:.01,y:.99}
+  },{responsive:true,displayModeBar:false});
 
   const cats=['PTS','REB','AST','STL','BLK'];
   const mx=cats.map(c=>Math.max(...DATA.map(d=>d[c]||0)));
