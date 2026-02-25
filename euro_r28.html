@@ -612,11 +612,15 @@ function renderHistory(){
   },{responsive:true,displayModeBar:false});
 
   const cats=['PTS','REB','AST','STL','BLK'];
-  const mx=cats.map(c=>Math.max(...DATA.map(d=>d[c]||0)));
-  const norm=cats.map((c,i)=>+((p[c]||0)/mx[i]*100).toFixed(1));
+  // True percentile: % of players this player beats in each stat
+  const norm=cats.map(c=>{
+    const val=p[c]||0;
+    const below=DATA.filter(d=>(d[c]||0)<val).length;
+    return +((below/DATA.length)*100).toFixed(1);
+  });
   Plotly.newPlot('chart-radar',[{type:'scatterpolar',r:[...norm,norm[0]],theta:[...cats,cats[0]],
     fill:'toself',line:{color:'#f59e0b',width:2},fillcolor:'rgba(245,158,11,.15)',
-    hovertemplate:'%{theta}: %{r:.1f}<extra></extra>'}],
+    hovertemplate:'%{theta}: %{r:.1f}th percentile<extra></extra>'}],
     {polar:{bgcolor:'rgba(0,0,0,0)',angularaxis:{color:'#94a3b8',gridcolor:'#2a3552'},
       radialaxis:{color:'#94a3b8',gridcolor:'#2a3552',range:[0,100],visible:false}},
       paper_bgcolor:'rgba(0,0,0,0)',font:{color:'#94a3b8'},showlegend:false,margin:{t:20,r:60,b:20,l:60}},
