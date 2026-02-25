@@ -634,33 +634,51 @@ function runOptimizer(){
   const minFpt=parseFloat(document.getElementById('minfpt-sl').value);
   const maxInac=parseInt(document.getElementById('inac-sl').value);
   const el=document.getElementById('opt-result');
-  el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ Optimizing...</p>';
+  el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב קבוצה אופטימלית...</p>';
   setTimeout(()=>{
+    // Starters: sorted by ExpFPT (maximize raw output)
     const cands=DATA.filter(p=>p.FPT>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A')
       .sort((a,b)=>b.ExpFPT-a.ExpFPT);
-    if(cands.length<10){el.innerHTML='<p style="color:#ef4444;text-align:center;padding:30px">Not enough candidates. Lower Min FPT or increase Max Inactive Rounds.</p>';return;}
-    let team=[],cr=0;
-    for(const p of cands){if(team.length>=10)break;if(cr+p.CR<=budget){team.push({...p});cr+=p.CR;}}
-    if(team.length<10){
-      const remaining=cands.filter(p=>!team.some(t=>t.Name===p.Name)).reverse();
-      for(const p of remaining){if(team.length>=10)break;if(cr+p.CR<=budget){team.push({...p});cr+=p.CR;}}
+    // Bench: sorted by ExpFPT/CR efficiency (bench = 0.5x so CR matters more)
+    const candsByEff=[...cands].sort((a,b)=>(b.ExpFPT/Math.max(b.CR,1))-(a.ExpFPT/Math.max(a.CR,1)));
+
+    if(cands.length<10){
+      el.innerHTML=`<p style="color:#ef4444;text-align:center;padding:30px">רק ${cands.length} שחקנים עומדים בקריטריונים.<br>נסה להוריד Min FPT ל-${minFpt-1} או להגדיל Max Inactive Rounds.</p>`;
+      return;
     }
-    if(team.length<10){el.innerHTML='<p style="color:#ef4444;text-align:center;padding:30px">Cannot fill 10 players within budget. Try increasing budget.</p>';return;}
-    let improved=true,iter=0;
-    while(improved&&iter++<200){
-      improved=false;
-      for(let i=0;i<team.length;i++){
-        for(const cand of cands){
-          if(team.some(t=>t.Name===cand.Name))continue;
-          const nc=cr-team[i].CR+cand.CR;
-          if(nc>budget)continue;
-          const nt=[...team];nt[i]=cand;
-          if(calcTeamScore(nt)>calcTeamScore(team)+0.005){team=nt;cr=nc;improved=true;break;}
-        }
-        if(improved)break;
+    const minCR=Math.min(...cands.map(p=>p.CR));
+    let bestTeam=null,bestScore=-Infinity;
+
+    // Budget-split optimization: try every bench budget from min possible to 50% of total
+    // Starters picked by ExpFPT, bench picked by ExpFPT/CR (efficiency)
+    for(let bb=Math.ceil(4*minCR*2)/2; bb<=budget*0.5; bb+=0.5){
+      const sb=budget-bb;
+      // Greedy starters: top ExpFPT within sb, reserve budget for remaining slots
+      const starters=[],sNames=new Set(); let sCR=0;
+      for(const p of cands){
+        if(starters.length===6)break;
+        const reserve=(6-starters.length-1)*minCR;
+        if(sCR+p.CR+reserve<=sb){starters.push(p);sNames.add(p.Name);sCR+=p.CR;}
       }
+      if(starters.length<6)continue;
+      // Greedy bench: top Efficiency within bb, no overlap, reserve for remaining slots
+      const bench=[]; let bCR=0;
+      for(const p of candsByEff){
+        if(bench.length===4)break;
+        if(sNames.has(p.Name))continue;
+        const reserve=(4-bench.length-1)*minCR;
+        if(bCR+p.CR+reserve<=bb){bench.push(p);bCR+=p.CR;}
+      }
+      if(bench.length<4)continue;
+      const score=calcTeamScore([...starters,...bench]);
+      if(score>bestScore){bestScore=score;bestTeam={players:[...starters,...bench],usedCR:sCR+bCR};}
     }
-    displayTeam(team,cr,budget);
+
+    if(!bestTeam){
+      el.innerHTML=`<p style="color:#ef4444;text-align:center;padding:30px">לא נמצאה קבוצה תקפה בתקציב ${budget} CR.<br>נסה להגדיל את התקציב ל-${budget+5}.</p>`;
+      return;
+    }
+    displayTeam(bestTeam.players,bestTeam.usedCR,budget);
   },50);
 }
 
