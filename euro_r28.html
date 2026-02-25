@@ -88,6 +88,20 @@ tr.sel-row td{background:rgba(245,158,11,.08)!important;border-left:2px solid va
 .rb-CAUTION{background:rgba(249,115,22,.15);color:#f97316;border:1px solid rgba(249,115,22,.3)}
 .rb-SELL{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
 .rb-INACTIVE{background:rgba(75,85,99,.15);color:#6b7280;border:1px solid rgba(75,85,99,.3)}
+.rb-INJURED{background:rgba(239,68,68,.2);color:#ff6b6b;border:1px solid rgba(239,68,68,.5)}
+.rb-RETURNING{background:rgba(6,182,212,.18);color:#22d3ee;border:1px solid rgba(6,182,212,.45)}
+.ov-panel{background:var(--surf);border:1px solid rgba(6,182,212,.3);border-radius:9px;
+  padding:9px 14px;margin-bottom:14px;display:none;flex-wrap:wrap;gap:7px;align-items:center}
+.ov-panel.show{display:flex}
+.ov-title{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px;margin-right:4px}
+.ov-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;
+  font-size:11px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.ov-chip:hover{opacity:.75}
+.ov-chip.inj{background:rgba(239,68,68,.2);color:#ff6b6b}
+.ov-chip.ret{background:rgba(6,182,212,.18);color:#22d3ee}
+.ov-clear-all{margin-left:auto;font-size:10px;color:var(--txt2);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0}
+.fb[data-r="INJURED"].on{background:#ef4444;border-color:#ef4444;color:#fff}
+.fb[data-r="RETURNING"].on{background:#06b6d4;border-color:#06b6d4;color:#000}
 .pos{color:#10b981}.neg{color:#ef4444}.neu{color:var(--txt2)}
 .sb{display:flex;align-items:center;gap:5px}
 .sb-bg{width:48px;height:5px;background:var(--brd);border-radius:3px;overflow:hidden}
@@ -193,6 +207,7 @@ input[type=range]{accent-color:var(--acc);width:160px}
 <div class="content">
 <div class="panel active" id="p0">
   <div class="sc-grid" id="sc-grid"></div>
+  <div class="ov-panel" id="overrides-panel"></div>
   <div class="flt">
     <input class="fi" type="text" id="search" placeholder="🔍 Player or team..." oninput="renderTable()">
     <select class="fi" id="posF" onchange="renderTable()">
@@ -333,12 +348,60 @@ const ROUND = 28;
 const TEAMS = ["AS Monaco", "Anadolu Efes Istanbul", "Baskonia Vitoria-Gasteiz", "Crvena Zvezda Meridianbet Belgrade", "Dubai Basketball", "EA7 Emporio Armani Milan", "FC Barcelona", "FC Bayern Munich", "Fenerbahce Beko Istanbul", "Hapoel IBI Tel Aviv", "LDLC ASVEL Villeurbanne", "Maccabi Rapyd Tel Aviv", "Olympiacos Piraeus", "Panathinaikos AKTOR Athens", "Paris Basketball", "Partizan Mozzart Bet Belgrade", "Real Madrid", "Valencia Basket", "Virtus Bologna", "Zalgiris Kaunas"];
 
 const RC = {'STRONG BUY':'#10b981','BUY':'#22c55e','PREMIUM':'#f59e0b','WATCH':'#3b82f6','HOLD':'#94a3b8','CAUTION':'#f97316','SELL':'#ef4444','INACTIVE':'#4b5563','N/A':'#374151'};
-const RI = {'STRONG BUY':'🚀','BUY':'✅','PREMIUM':'👑','WATCH':'👀','HOLD':'🤝','CAUTION':'⚠️','SELL':'🔴','INACTIVE':'💤','N/A':'—'};
-const RECS = ['STRONG BUY','BUY','PREMIUM','WATCH','HOLD','CAUTION','SELL','INACTIVE'];
+const RI = {'STRONG BUY':'🚀','BUY':'✅','PREMIUM':'👑','WATCH':'👀','HOLD':'🤝','CAUTION':'⚠️','SELL':'🔴','INACTIVE':'💤','N/A':'—','INJURED':'🚑','RETURNING':'🔄'};
+const RECS = ['STRONG BUY','BUY','PREMIUM','WATCH','HOLD','CAUTION','SELL','INACTIVE','INJURED','RETURNING'];
 const PLT = {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#94a3b8',family:'Segoe UI,system-ui,sans-serif'},xaxis:{gridcolor:'#2a3552',zeroline:false},yaxis:{gridcolor:'#2a3552',zeroline:false},legend:{bgcolor:'rgba(15,22,41,.85)',bordercolor:'#2a3552',borderwidth:1},margin:{t:30,r:20,b:50,l:60},hovermode:'closest'};
 
 let sortCol='RS', sortDir=-1, recFilter='ALL', chartsBuilt=false;
 let selectedPlayer = null;
+
+// ─── INJURY OVERRIDES (persisted in localStorage) ───────────────────────────
+let OVERRIDES = JSON.parse(localStorage.getItem('EL_OVERRIDES') || '{}');
+function saveOverrides(){ localStorage.setItem('EL_OVERRIDES', JSON.stringify(OVERRIDES)); }
+
+function effectiveRec(p){
+  const ov = OVERRIDES[p.Name];
+  if(ov === 'INJURED')   return 'INJURED';
+  if(ov === 'RETURNING') return 'RETURNING';
+  return p.Rec;
+}
+
+function effectiveExpFPT(p){
+  if(OVERRIDES[p.Name] === 'INJURED') return 0;
+  if(OVERRIDES[p.Name] === 'RETURNING'){
+    // Reduce expectation based on absence length (rust factor)
+    if(p.RndsSince > 4) return +(p.ExpFPT * 0.70).toFixed(1);
+    if(p.RndsSince > 2) return +(p.ExpFPT * 0.82).toFixed(1);
+    return +(p.ExpFPT * 0.90).toFixed(1);
+  }
+  return p.ExpFPT;
+}
+
+function setOverride(name, status){
+  if(status === null) delete OVERRIDES[name];
+  else OVERRIDES[name] = status;
+  saveOverrides();
+  renderTable();
+  renderOverridesPanel();
+  if(selectedPlayer === name) selectPlayer(name);
+}
+
+function renderOverridesPanel(){
+  const panel = document.getElementById('overrides-panel');
+  if(!panel) return;
+  const entries = Object.entries(OVERRIDES);
+  if(entries.length === 0){ panel.classList.remove('show'); return; }
+  panel.classList.add('show');
+  panel.innerHTML = '<span class="ov-title">Manual overrides:</span>' +
+    entries.map(([name, status]) => {
+      const ns = name.replace(/'/g,"\\'");
+      const cls = status === 'INJURED' ? 'inj' : 'ret';
+      const icon = status === 'INJURED' ? '🚑' : '🔄';
+      return `<span class="ov-chip ${cls}" onclick="setOverride('${ns}',null)" title="Click to clear override">` +
+             `${icon} ${name} <span style="opacity:.6;margin-left:2px">✕</span></span>`;
+    }).join('') +
+    `<button class="ov-clear-all" onclick="if(confirm('Clear all overrides?')){OVERRIDES={};saveOverrides();renderTable();renderOverridesPanel();}">Clear all</button>`;
+}
 
 // Team filter
 const tsEl = document.getElementById('teamF');
@@ -389,9 +452,10 @@ function renderTable(){
   const showInac=document.getElementById('showInactive').checked;
   const showNA=document.getElementById('showNA').checked;
   let rows=DATA.filter(p=>{
-    if(!showNA && p.Rec==='N/A') return false;
-    if(!showInac && p.Rec==='INACTIVE') return false;
-    if(recFilter!=='ALL' && p.Rec!==recFilter) return false;
+    const eRec=effectiveRec(p);
+    if(!showNA && p.Rec==='N/A' && !OVERRIDES[p.Name]) return false;
+    if(!showInac && p.Rec==='INACTIVE' && eRec==='INACTIVE') return false;
+    if(recFilter!=='ALL' && eRec!==recFilter) return false;
     if(pos && p.Pos!==pos) return false;
     if(team && p.Team!==team) return false;
     if(q && !p.Name.toLowerCase().includes(q) && !p.Team.toLowerCase().includes(q)) return false;
@@ -410,6 +474,15 @@ function renderTable(){
     const rcl=p.Res>0?'pos':p.Res<0?'neg':'neu';
     const since=p.RndsSince>0?`<span style="font-size:10px;color:${p.RndsSince>4?'#ef4444':p.RndsSince>2?'#f97316':'#94a3b8'}"> (R${p.LastW})</span>`:'';
     const sel=selectedPlayer===p.Name?' sel-row':'';
+    const eRec=effectiveRec(p);
+    const eExp=effectiveExpFPT(p);
+    const isReturning=OVERRIDES[p.Name]==='RETURNING';
+    const expCell=isReturning
+      ?`<span style="font-weight:700;color:#22d3ee">${eExp.toFixed(1)}</span><span style="font-size:10px;color:#22d3ee;margin-left:3px" title="Reduced for return from injury">↓</span>`
+      :`<span style="font-weight:700;color:var(--acc)">${eExp.toFixed(1)}</span>`;
+    const recCell=OVERRIDES[p.Name]
+      ?`<span class="rb rb-${eRec}">${RI[eRec]||'?'} ${eRec}</span><div style="font-size:9px;color:var(--txt2);margin-top:2px">was: ${p.Rec}</div>`
+      :`<span class="rb rb-${eRec}">${RI[eRec]||'?'} ${eRec}</span>`;
     return `<tr class="${sel}" onclick="selectPlayer('${p.Name.replace(/'/g,"\\'")}')">
       <td><div class="pn">${p.Name}${since}</div><div class="tn">${p.Team}</div></td>
       <td><span class="pb">${p.Pos}</span></td>
@@ -419,13 +492,14 @@ function renderTable(){
       <td class="${tcl}">${tarr} ${tp>0?'+':''}${tp}%</td>
       <td class="${rcl}">${p.Res>0?'+':''}${p.Res.toFixed(2)}</td>
       <td>${stabBar(p.Stab)}</td>
-      <td style="font-weight:700;color:var(--acc)">${p.ExpFPT.toFixed(1)}</td>
+      <td>${expCell}</td>
       <td style="color:var(--txt2)">${p.GP}</td>
       <td>${spark(p.H)}</td>
-      <td><span class="rb rb-${p.Rec}">${RI[p.Rec]} ${p.Rec}</span></td>
+      <td>${recCell}</td>
     </tr>`;
   }).join('');
   document.getElementById('tcount').textContent=`Showing ${rows.length} of ${DATA.length} players`;
+  renderOverridesPanel();
 }
 
 function switchTab(i){
@@ -539,15 +613,29 @@ function selectPlayer(name){
   const tcol=p.TrendPct>5?'#10b981':p.TrendPct<-5?'#ef4444':'#94a3b8';
   const rcol=p.Res>0?'#10b981':p.Res<0?'#ef4444':'#94a3b8';
   document.getElementById('sp-content').innerHTML=`
-    <div class="sp-name">${p.Name} <span class="rb rb-${p.Rec}" style="font-size:10px">${RI[p.Rec]} ${p.Rec}</span></div>
+    <div class="sp-name">${p.Name} <span class="rb rb-${effectiveRec(p)}" style="font-size:10px">${RI[effectiveRec(p)]||'?'} ${effectiveRec(p)}</span></div>
     <div class="sp-team">${p.Team} · ${p.Pos} · CR ${p.CR}</div>
     <div class="sp-grid">
       <div class="sp-stat"><div class="v">${p.FPT}</div><div class="k">FPT avg</div></div>
       <div class="sp-stat"><div class="v">${p.L5!==null?p.L5:'—'}</div><div class="k">Last 5</div></div>
       <div class="sp-stat"><div class="v" style="color:${tcol}">${p.TrendPct>0?'+':''}${p.TrendPct}%</div><div class="k">Trend</div></div>
       <div class="sp-stat"><div class="v" style="color:${rcol}">${p.Res>0?'+':''}${p.Res}</div><div class="k">Residual</div></div>
-      <div class="sp-stat"><div class="v" style="color:var(--acc)">${p.ExpFPT}</div><div class="k">Exp. Next</div></div>
+      <div class="sp-stat"><div class="v" style="color:${OVERRIDES[p.Name]==='RETURNING'?'#22d3ee':'var(--acc)'}">${effectiveExpFPT(p).toFixed(1)}${OVERRIDES[p.Name]==='RETURNING'?' ↓':''}</div><div class="k">Exp. Next</div></div>
       <div class="sp-stat"><div class="v">${p.GP}</div><div class="k">GP</div></div>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:8px">
+      <button onclick="setOverride('${name.replace(/'/g,"\\'")}', OVERRIDES['${name.replace(/'/g,"\\'")}']==='INJURED'?null:'INJURED')"
+        style="flex:1;padding:5px;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;
+          background:${OVERRIDES[p.Name]==='INJURED'?'#ef4444':'rgba(239,68,68,.2)'};
+          color:${OVERRIDES[p.Name]==='INJURED'?'#fff':'#ff6b6b'}">
+        🚑 ${OVERRIDES[p.Name]==='INJURED'?'✓ Injured':'Mark Injured'}
+      </button>
+      <button onclick="setOverride('${name.replace(/'/g,"\\'")}', OVERRIDES['${name.replace(/'/g,"\\'")}']==='RETURNING'?null:'RETURNING')"
+        style="flex:1;padding:5px;border:none;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;
+          background:${OVERRIDES[p.Name]==='RETURNING'?'#06b6d4':'rgba(6,182,212,.15)'};
+          color:${OVERRIDES[p.Name]==='RETURNING'?'#000':'#22d3ee'}">
+        🔄 ${OVERRIDES[p.Name]==='RETURNING'?'✓ Returning':'Mark Returning'}
+      </button>
     </div>
     <button onclick="switchTab(4);document.getElementById('playerSel').value='${name.replace(/'/g,"\\'")}';renderHistory();" style="width:100%;padding:7px;background:var(--acc);color:#000;border:none;border-radius:7px;font-weight:700;cursor:pointer;font-size:12px">📅 Show Full History</button>`;
   document.getElementById('spotlight').classList.add('show');
@@ -629,8 +717,8 @@ function renderHistory(){
 
 // OPTIMIZER
 function calcTeamScore(team){
-  const s=[...team].sort((a,b)=>b.ExpFPT-a.ExpFPT);
-  return s[0].ExpFPT + s.slice(0,6).reduce((t,p)=>t+p.ExpFPT,0) + s.slice(6).reduce((t,p)=>t+p.ExpFPT*0.5,0);
+  const s=[...team].sort((a,b)=>effectiveExpFPT(b)-effectiveExpFPT(a));
+  return effectiveExpFPT(s[0]) + s.slice(0,6).reduce((t,p)=>t+effectiveExpFPT(p),0) + s.slice(6).reduce((t,p)=>t+effectiveExpFPT(p)*0.5,0);
 }
 
 function runOptimizer(){
@@ -640,11 +728,11 @@ function runOptimizer(){
   const el=document.getElementById('opt-result');
   el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב קבוצה אופטימלית...</p>';
   setTimeout(()=>{
-    // Starters: sorted by ExpFPT (maximize raw output)
-    const cands=DATA.filter(p=>p.FPT>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A')
-      .sort((a,b)=>b.ExpFPT-a.ExpFPT);
-    // Bench: sorted by ExpFPT/CR efficiency (bench = 0.5x so CR matters more)
-    const candsByEff=[...cands].sort((a,b)=>(b.ExpFPT/Math.max(b.CR,1))-(a.ExpFPT/Math.max(a.CR,1)));
+    // Starters: sorted by effectiveExpFPT (INJURED excluded, RETURNING reduced)
+    const cands=DATA.filter(p=>p.FPT>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A'&&OVERRIDES[p.Name]!=='INJURED')
+      .sort((a,b)=>effectiveExpFPT(b)-effectiveExpFPT(a));
+    // Bench: sorted by effectiveExpFPT/CR efficiency (bench = 0.5x so CR matters more)
+    const candsByEff=[...cands].sort((a,b)=>(effectiveExpFPT(b)/Math.max(b.CR,1))-(effectiveExpFPT(a)/Math.max(a.CR,1)));
 
     if(cands.length<10){
       el.innerHTML=`<p style="color:#ef4444;text-align:center;padding:30px">רק ${cands.length} שחקנים עומדים בקריטריונים.<br>נסה להוריד Min FPT ל-${minFpt-1} או להגדיל Max Inactive Rounds.</p>`;
@@ -707,7 +795,7 @@ function displayTeam(team,usedCR,budget){
             ${i===0?'<span class="cap-badge">C</span>':''}
             <span class="pc-name">${p.Name}</span>
             <span class="pc-cr">${p.CR}</span>
-            <span class="pc-fpt">${i===0?(p.ExpFPT*2).toFixed(1)+'*':p.ExpFPT.toFixed(1)}</span>
+            <span class="pc-fpt">${i===0?(effectiveExpFPT(p)*2).toFixed(1)+'*':effectiveExpFPT(p).toFixed(1)}${OVERRIDES[p.Name]==='RETURNING'?'<span style="font-size:9px;color:#22d3ee"> ↓</span>':''}</span>
             <span class="rb rb-${p.Rec}" style="padding:2px 6px;font-size:10px">${RI[p.Rec]}</span>
           </div>`).join('')}
       </div>
