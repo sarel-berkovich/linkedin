@@ -75,6 +75,7 @@ th{background:var(--surf2);color:var(--txt2);font-weight:700;text-transform:uppe
   white-space:nowrap;cursor:pointer;user-select:none}
 th:hover{color:var(--acc)}
 td{padding:8px 13px;border-top:1px solid var(--brd);white-space:nowrap;vertical-align:middle;text-align:center}
+#p6 td,#p6 th{white-space:normal;word-break:break-word;text-align:left}
 /* Player col left-aligned, Rec col left-aligned */
 #mainT td:first-child,#mainT th:first-child{text-align:left}
 #mainT td:last-child{text-align:left}
@@ -207,6 +208,7 @@ input[type=range]{accent-color:var(--acc);width:160px}
   <div class="tab" onclick="switchTab(4)">📅 History</div>
   <div class="tab" onclick="switchTab(5)">🏆 Team Builder</div>
   <div class="tab" onclick="switchTab(6)">📖 How It Works</div>
+  <div class="tab" onclick="switchTab(7)">👤 My Team</div>
 </div>
 <div class="content">
 <div class="panel active" id="p0">
@@ -439,6 +441,47 @@ input[type=range]{accent-color:var(--acc);width:160px}
 <tr><td style="padding:7px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">RETURNING penalty</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">−10% (absent ≤2 rounds) · −18% (3–4 rounds) · −30% (5+ rounds)</td></tr>
 </tbody></table>
 </div>
+
+</div>
+</div>
+<div class="panel" id="p7">
+<div style="max-width:960px;margin:0 auto;padding:8px 0 40px">
+
+  <!-- Search bar -->
+  <div style="position:relative;margin-bottom:20px">
+    <input id="mt-search" type="text" placeholder="🔍 חפש שחקן להוספה לקבוצה..."
+      oninput="renderMTSearch()" onfocus="renderMTSearch()"
+      style="width:100%;box-sizing:border-box;padding:11px 16px;background:var(--surf);
+             border:1px solid var(--brd);border-radius:10px;color:var(--txt);
+             font-size:14px;outline:none">
+    <div id="mt-results" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
+      background:var(--surf);border:1px solid var(--brd);border-radius:10px;
+      z-index:300;max-height:340px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)"></div>
+  </div>
+
+  <!-- Score summary -->
+  <div id="mt-score" style="margin-bottom:20px"></div>
+
+  <!-- Team grid -->
+  <div class="team-grid">
+    <div class="team-section">
+      <div class="sec-title">⭐ חמישיה ראשונה (6)</div>
+      <div id="mt-starters"></div>
+    </div>
+    <div class="team-section">
+      <div class="sec-title">🪑 ספסל × 0.5 (4)</div>
+      <div id="mt-bench"></div>
+    </div>
+  </div>
+
+  <!-- Clear button -->
+  <div style="margin-top:16px;text-align:center">
+    <button onclick="clearMyTeam()"
+      style="padding:7px 20px;background:transparent;border:1px solid #ef4444;
+             color:#ef4444;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">
+      🗑 נקה קבוצה
+    </button>
+  </div>
 
 </div>
 </div>
@@ -962,6 +1005,215 @@ function displayThreeTeams(teams,budget){
 function displayTeam(team,usedCR,budget){
   document.getElementById('opt-result').innerHTML=buildTeamCard(team,usedCR,budget,0);
 }
+
+
+// ═══════════════════════════════════════════════════════
+// MY TEAM — manual squad builder with persistence
+// ═══════════════════════════════════════════════════════
+let MT_STARTERS = Array(6).fill(null);
+let MT_BENCH    = Array(4).fill(null);
+let MT_CAPTAIN  = 0; // index into MT_STARTERS
+
+function saveMyTeam(){
+  localStorage.setItem('EL_MY_TEAM', JSON.stringify({
+    starters: MT_STARTERS, bench: MT_BENCH, captain: MT_CAPTAIN
+  }));
+}
+
+function loadMyTeam(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('EL_MY_TEAM') || 'null');
+    if(!saved) return;
+    // Validate: only keep names that exist in DATA
+    const names = new Set(DATA.map(p=>p.Name));
+    MT_STARTERS = (saved.starters||[]).map(n=>names.has(n)?n:null).slice(0,6);
+    while(MT_STARTERS.length<6) MT_STARTERS.push(null);
+    MT_BENCH = (saved.bench||[]).map(n=>names.has(n)?n:null).slice(0,4);
+    while(MT_BENCH.length<4) MT_BENCH.push(null);
+    MT_CAPTAIN = saved.captain||0;
+  }catch(e){}
+}
+
+function getPlayer(name){ return name ? DATA.find(p=>p.Name===name)||null : null; }
+
+function myTeamTotal(){
+  const mpCol = {'EASY':'#16a34a','FAVORABLE':'#65a30d','TOUGH':'#ea580c','HARD':'#dc2626'};
+  let score=0, cr=0;
+  MT_STARTERS.forEach((name,i)=>{
+    const p=getPlayer(name); if(!p) return;
+    const adj=effectiveAdjFPT(p);
+    score += i===MT_CAPTAIN ? adj*2 : adj;
+    cr += p.CR;
+  });
+  MT_BENCH.forEach(name=>{
+    const p=getPlayer(name); if(!p) return;
+    score += effectiveAdjFPT(p)*0.5;
+    cr += p.CR;
+  });
+  return {score, cr};
+}
+
+function mtPlayerCard(name, section, idx){
+  const mpColors={'EASY':'#16a34a','FAVORABLE':'#65a30d','TOUGH':'#ea580c','HARD':'#dc2626'};
+  if(!name){
+    return `<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;
+      margin-bottom:6px;background:var(--surf2);opacity:.4;font-size:12px;color:var(--txt2)">
+      <span style="flex:1">— ריק —</span>
+      <button onclick="focusMTSearch('${section}',${idx})"
+        style="padding:2px 10px;background:transparent;border:1px solid var(--brd);
+               color:var(--txt2);border-radius:6px;cursor:pointer;font-size:11px">+ הוסף</button>
+    </div>`;
+  }
+  const p = getPlayer(name);
+  if(!p) return '';
+  const adj = effectiveAdjFPT(p);
+  const exp = effectiveExpFPT(p);
+  const mColor = mpColors[p.Matchup||'']||'#9ca3af';
+  const mLabel = p.Matchup||'—';
+  const adjStr = p.AdjFPT!=null && p.OppTLA
+    ? `<span style="color:${mColor};font-size:11px">${adj.toFixed(1)}✦</span>` : '';
+  const oppStr = p.OppTLA
+    ? `<span style="font-size:10px;font-weight:700;color:${mColor}">vs ${p.OppTLA}</span>
+       <span style="font-size:9px;color:${mColor};margin-left:3px">${mLabel}</span>` : '';
+  const isCap = section==='s' && idx===MT_CAPTAIN;
+  const capBtn = section==='s'
+    ? `<button onclick="setMyCapt(${idx})" title="הגדר כקפטן"
+        style="padding:1px 7px;border-radius:4px;font-size:10px;font-weight:800;cursor:pointer;
+               background:${isCap?'var(--acc)':'transparent'};
+               color:${isCap?'#000':'var(--txt2)'};
+               border:1px solid ${isCap?'var(--acc)':'var(--brd)'}">C</button>` : '';
+  return `<div style="display:flex;align-items:center;gap:7px;padding:8px;border-radius:8px;
+    margin-bottom:6px;background:var(--surf2);
+    ${isCap?'border:1px solid var(--acc);background:rgba(245,158,11,.08)':''}">
+    ${capBtn}
+    <span class="pb" style="background:${RC[p.Rec]||'#334155'}22;color:${RC[p.Rec]||'#94a3b8'}">${p.Pos}</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;font-size:12px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.Name}</div>
+      <div style="font-size:10px;color:var(--txt2)">${p.Team}</div>
+    </div>
+    <div style="text-align:right;white-space:nowrap">
+      <div style="font-size:11px;color:var(--txt2)">CR ${p.CR}</div>
+      <div style="font-size:11px">Exp <b style="color:var(--acc)">${exp.toFixed(1)}</b> ${adjStr}</div>
+      <div>${oppStr}</div>
+    </div>
+    <button onclick="removeFromMyTeam('${section}',${idx})"
+      style="padding:2px 7px;background:transparent;border:1px solid #ef4444;
+             color:#ef4444;border-radius:6px;cursor:pointer;font-size:11px;flex-shrink:0">×</button>
+  </div>`;
+}
+
+function renderMyTeam(){
+  const sEl=document.getElementById('mt-starters');
+  const bEl=document.getElementById('mt-bench');
+  const scEl=document.getElementById('mt-score');
+  if(!sEl) return;
+  sEl.innerHTML = MT_STARTERS.map((n,i)=>mtPlayerCard(n,'s',i)).join('');
+  bEl.innerHTML = MT_BENCH.map((n,i)=>mtPlayerCard(n,'b',i)).join('');
+
+  const {score,cr} = myTeamTotal();
+  const filled = MT_STARTERS.filter(Boolean).length + MT_BENCH.filter(Boolean).length;
+  if(filled===0){
+    scEl.innerHTML='<p style="color:var(--txt2);text-align:center;padding:20px 0">חפש שחקנים למעלה כדי לבנות את הקבוצה שלך</p>';
+  } else {
+    scEl.innerHTML=`
+      <div class="team-score-box">
+        <div class="tscore">${score.toFixed(1)} <span style="font-size:18px;color:var(--txt2)">adj FPT צפוי</span></div>
+        <div class="tscore-sub">CR כולל: ${cr.toFixed(1)} &nbsp;·&nbsp; ${filled}/10 שחקנים</div>
+      </div>`;
+  }
+}
+
+function renderMTSearch(){
+  const q=(document.getElementById('mt-search').value||'').trim().toLowerCase();
+  const res=document.getElementById('mt-results');
+  if(!res) return;
+  if(q.length<1){res.style.display='none';return;}
+  const inTeam=new Set([...MT_STARTERS,...MT_BENCH].filter(Boolean));
+  const matches=DATA.filter(p=>p.Name.toLowerCase().includes(q)||p.Team.toLowerCase().includes(q)).slice(0,8);
+  if(!matches.length){res.style.display='none';return;}
+  const startersFull=MT_STARTERS.every(Boolean);
+  const benchFull=MT_BENCH.every(Boolean);
+  res.style.display='block';
+  res.innerHTML=matches.map(p=>{
+    const already=inTeam.has(p.Name);
+    const adj=effectiveAdjFPT(p);
+    const mpColors={'EASY':'#16a34a','FAVORABLE':'#65a30d','TOUGH':'#ea580c','HARD':'#dc2626'};
+    const mColor=mpColors[p.Matchup||'']||'#9ca3af';
+    const oppStr=p.OppTLA?`<span style="color:${mColor};font-size:10px"> vs ${p.OppTLA} ${p.Matchup||''}</span>`:'';
+    const sBtn=already?'':startersFull
+      ?`<button disabled style="padding:2px 9px;border-radius:5px;background:#334155;color:#64748b;border:none;font-size:11px;cursor:not-allowed">+ה מלא</button>`
+      :`<button onclick="addToMyTeam('${p.Name.replace(/'/g,"\'")}','s');document.getElementById('mt-search').value='';document.getElementById('mt-results').style.display='none'"
+          style="padding:2px 9px;border-radius:5px;background:var(--acc);color:#000;border:none;font-size:11px;font-weight:700;cursor:pointer">+חמישיה</button>`;
+    const bBtn=already?'':benchFull
+      ?`<button disabled style="padding:2px 9px;border-radius:5px;background:#334155;color:#64748b;border:none;font-size:11px;cursor:not-allowed">ספסל מלא</button>`
+      :`<button onclick="addToMyTeam('${p.Name.replace(/'/g,"\'")}','b');document.getElementById('mt-search').value='';document.getElementById('mt-results').style.display='none'"
+          style="padding:2px 9px;border-radius:5px;background:#334155;color:var(--txt);border:1px solid var(--brd);font-size:11px;cursor:pointer">+ספסל</button>`;
+    return `<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;
+      border-bottom:1px solid var(--brd);cursor:default;transition:background .1s"
+      onmouseover="this.style.background='rgba(255,255,255,.04)'"
+      onmouseout="this.style.background='transparent'">
+      <span class="pb" style="background:${RC[p.Rec]||'#334155'}22;color:${RC[p.Rec]||'#94a3b8'}">${p.Pos}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:13px;color:${already?'var(--txt2)':'var(--txt)'}">${p.Name}</div>
+        <div style="font-size:10px;color:var(--txt2)">${p.Team} · CR ${p.CR} · Exp ${adj.toFixed(1)}${oppStr}</div>
+      </div>
+      ${already?'<span style="font-size:11px;color:#22c55e">✓ בקבוצה</span>':sBtn+' '+bBtn}
+    </div>`;
+  }).join('');
+}
+
+function focusMTSearch(section, idx){
+  document.getElementById('mt-search').focus();
+}
+
+function addToMyTeam(name, section){
+  if(section==='s'){
+    const slot=MT_STARTERS.indexOf(null);
+    if(slot===-1) return;
+    MT_STARTERS[slot]=name;
+  } else {
+    const slot=MT_BENCH.indexOf(null);
+    if(slot===-1) return;
+    MT_BENCH[slot]=name;
+  }
+  saveMyTeam(); renderMyTeam();
+}
+
+function removeFromMyTeam(section, idx){
+  if(section==='s'){
+    MT_STARTERS[idx]=null;
+    if(MT_CAPTAIN===idx) MT_CAPTAIN=MT_STARTERS.findIndex(Boolean);
+    if(MT_CAPTAIN<0) MT_CAPTAIN=0;
+  } else {
+    MT_BENCH[idx]=null;
+  }
+  saveMyTeam(); renderMyTeam();
+}
+
+function setMyCapt(idx){
+  if(MT_STARTERS[idx]===null) return;
+  MT_CAPTAIN=idx; saveMyTeam(); renderMyTeam();
+}
+
+function clearMyTeam(){
+  if(!confirm('לנקות את הקבוצה?')) return;
+  MT_STARTERS=Array(6).fill(null);
+  MT_BENCH=Array(4).fill(null);
+  MT_CAPTAIN=0;
+  saveMyTeam(); renderMyTeam();
+}
+
+// Close search results when clicking outside
+document.addEventListener('click',e=>{
+  const res=document.getElementById('mt-results');
+  const inp=document.getElementById('mt-search');
+  if(res && inp && !res.contains(e.target) && e.target!==inp){
+    res.style.display='none';
+  }
+});
+
+loadMyTeam();
+renderMyTeam();
 
 renderTable();
 </script></body></html>
