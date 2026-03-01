@@ -236,6 +236,7 @@ input[type=range]{accent-color:var(--acc);width:160px}
       <th onclick="sortBy('Res')">Residual ↕</th>
       <th onclick="sortBy('Stab')">Stability ↕</th>
       <th onclick="sortBy('ExpFPT')">Exp. Next ↕</th>
+      <th onclick="sortBy('AdjFPT')">Adj/vs ↕</th>
       <th onclick="sortBy('GP')">GP ↕</th>
       <th>Form</th>
       <th onclick="sortBy('RS')">Rec ↕</th>
@@ -377,6 +378,17 @@ function effectiveExpFPT(p){
   return p.ExpFPT;
 }
 
+function effectiveAdjFPT(p){
+  if(OVERRIDES[p.Name] === 'INJURED') return 0;
+  const base=p.AdjFPT!=null?p.AdjFPT:p.ExpFPT;
+  if(OVERRIDES[p.Name] === 'RETURNING'){
+    if(p.RndsSince > 4) return +(base * 0.70).toFixed(1);
+    if(p.RndsSince > 2) return +(base * 0.82).toFixed(1);
+    return +(base * 0.90).toFixed(1);
+  }
+  return base;
+}
+
 function setOverride(name, status){
   if(status === null) delete OVERRIDES[name];
   else OVERRIDES[name] = status;
@@ -477,9 +489,16 @@ function renderTable(){
     const eRec=effectiveRec(p);
     const eExp=effectiveExpFPT(p);
     const isReturning=OVERRIDES[p.Name]==='RETURNING';
+    const mpColors={'EASY':'#16a34a','FAVORABLE':'#65a30d','TOUGH':'#ea580c','HARD':'#dc2626'};
+    const mLabel=p.Matchup||'';const mColor=mpColors[mLabel]||'#9ca3af';
+    const adjVal=p.AdjFPT!=null?p.AdjFPT:null;
+    const adjLine=adjVal!=null&&p.OppTLA?`<div style="font-size:10px;margin-top:1px;color:${mColor}">${(+adjVal).toFixed(1)}✦</div>`:'';
+    const matchCell=p.OppTLA
+      ?`<div style="font-size:11px;font-weight:700;color:${mColor}">vs ${p.OppTLA}</div><div style="font-size:9px;color:${mColor}">${mLabel}</div>`
+      :'<div style="font-size:10px;color:#9ca3af">—</div>';
     const expCell=isReturning
-      ?`<span style="font-weight:700;color:#22d3ee">${eExp.toFixed(1)}</span><span style="font-size:10px;color:#22d3ee;margin-left:3px" title="Reduced for return from injury">↓</span>`
-      :`<span style="font-weight:700;color:var(--acc)">${eExp.toFixed(1)}</span>`;
+      ?`<span style="font-weight:700;color:#22d3ee">${eExp.toFixed(1)}</span><span style="font-size:10px;color:#22d3ee;margin-left:3px" title="Reduced for return from injury">↓</span>${adjLine}`
+      :`<span style="font-weight:700;color:var(--acc)">${eExp.toFixed(1)}</span>${adjLine}`;
     const recCell=OVERRIDES[p.Name]
       ?`<span class="rb rb-${eRec}">${RI[eRec]||'?'} ${eRec}</span><div style="font-size:9px;color:var(--txt2);margin-top:2px">was: ${p.Rec}</div>`
       :`<span class="rb rb-${eRec}">${RI[eRec]||'?'} ${eRec}</span>`;
@@ -493,6 +512,7 @@ function renderTable(){
       <td class="${rcl}">${p.Res>0?'+':''}${p.Res.toFixed(2)}</td>
       <td>${stabBar(p.Stab)}</td>
       <td>${expCell}</td>
+      <td style="white-space:nowrap;text-align:center">${matchCell}</td>
       <td style="color:var(--txt2)">${p.GP}</td>
       <td>${spark(p.H)}</td>
       <td>${recCell}</td>
@@ -717,8 +737,8 @@ function renderHistory(){
 
 // OPTIMIZER
 function calcTeamScore(team){
-  const s=[...team].sort((a,b)=>effectiveExpFPT(b)-effectiveExpFPT(a));
-  return effectiveExpFPT(s[0]) + s.slice(0,6).reduce((t,p)=>t+effectiveExpFPT(p),0) + s.slice(6).reduce((t,p)=>t+effectiveExpFPT(p)*0.5,0);
+  const s=[...team].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+  return effectiveAdjFPT(s[0]) + s.slice(0,6).reduce((t,p)=>t+effectiveAdjFPT(p),0) + s.slice(6).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);
 }
 
 function runOptimizer(){
@@ -729,10 +749,10 @@ function runOptimizer(){
   el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב קבוצה אופטימלית...</p>';
   setTimeout(()=>{
     // Starters: sorted by effectiveExpFPT (INJURED excluded, RETURNING reduced)
-    const cands=DATA.filter(p=>effectiveExpFPT(p)>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A'&&OVERRIDES[p.Name]!=='INJURED')
-      .sort((a,b)=>effectiveExpFPT(b)-effectiveExpFPT(a));
-    // Bench: sorted by effectiveExpFPT/CR efficiency (bench = 0.5x so CR matters more)
-    const candsByEff=[...cands].sort((a,b)=>(effectiveExpFPT(b)/Math.max(b.CR,1))-(effectiveExpFPT(a)/Math.max(a.CR,1)));
+    const cands=DATA.filter(p=>effectiveAdjFPT(p)>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A'&&OVERRIDES[p.Name]!=='INJURED')
+      .sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+    // Bench: sorted by effectiveAdjFPT/CR efficiency (bench = 0.5x so CR matters more)
+    const candsByEff=[...cands].sort((a,b)=>(effectiveAdjFPT(b)/Math.max(b.CR,1))-(effectiveAdjFPT(a)/Math.max(a.CR,1)));
 
     if(cands.length<10){
       el.innerHTML=`<p style="color:#ef4444;text-align:center;padding:30px">רק ${cands.length} שחקנים עומדים בקריטריונים.<br>נסה להוריד Min FPT ל-${minFpt-1} או להגדיל Max Inactive Rounds.</p>`;
