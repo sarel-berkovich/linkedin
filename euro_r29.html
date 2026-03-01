@@ -728,7 +728,7 @@ function runOptimizer(){
   el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב קבוצה אופטימלית...</p>';
   setTimeout(()=>{
     // Starters: sorted by effectiveExpFPT (INJURED excluded, RETURNING reduced)
-    const cands=DATA.filter(p=>p.FPT>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A'&&OVERRIDES[p.Name]!=='INJURED')
+    const cands=DATA.filter(p=>effectiveExpFPT(p)>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A'&&OVERRIDES[p.Name]!=='INJURED')
       .sort((a,b)=>effectiveExpFPT(b)-effectiveExpFPT(a));
     // Bench: sorted by effectiveExpFPT/CR efficiency (bench = 0.5x so CR matters more)
     const candsByEff=[...cands].sort((a,b)=>(effectiveExpFPT(b)/Math.max(b.CR,1))-(effectiveExpFPT(a)/Math.max(a.CR,1)));
