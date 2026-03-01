@@ -71,10 +71,13 @@ body{background:var(--bg);color:var(--txt);font-family:'Segoe UI',system-ui,sans
 .tw{overflow-x:auto;border-radius:11px;border:1px solid var(--brd)}
 table{width:100%;border-collapse:collapse;font-size:12.5px}
 th{background:var(--surf2);color:var(--txt2);font-weight:700;text-transform:uppercase;
-  font-size:10px;letter-spacing:.5px;padding:10px 13px;text-align:left;
+  font-size:10px;letter-spacing:.5px;padding:10px 13px;text-align:center;
   white-space:nowrap;cursor:pointer;user-select:none}
 th:hover{color:var(--acc)}
-td{padding:8px 13px;border-top:1px solid var(--brd);white-space:nowrap;vertical-align:middle}
+td{padding:8px 13px;border-top:1px solid var(--brd);white-space:nowrap;vertical-align:middle;text-align:center}
+/* Player col left-aligned, Rec col left-aligned */
+#mainT td:first-child,#mainT th:first-child{text-align:left}
+#mainT td:last-child{text-align:left}
 tr:hover td{background:rgba(255,255,255,.04)}
 tr.sel-row td{background:rgba(245,158,11,.08)!important;border-left:2px solid var(--acc)}
 .pn{font-weight:700}.tn{color:var(--txt2);font-size:11px;margin-top:1px}
@@ -203,6 +206,7 @@ input[type=range]{accent-color:var(--acc);width:160px}
   <div class="tab" onclick="switchTab(3)">🔬 Stability</div>
   <div class="tab" onclick="switchTab(4)">📅 History</div>
   <div class="tab" onclick="switchTab(5)">🏆 Team Builder</div>
+  <div class="tab" onclick="switchTab(6)">📖 How It Works</div>
 </div>
 <div class="content">
 <div class="panel active" id="p0">
@@ -336,6 +340,106 @@ input[type=range]{accent-color:var(--acc);width:160px}
       <p>• Only includes active players (played within Max Inactive Rounds setting)</p>
     </div>
   </div>
+</div>
+</div>
+<div class="panel" id="p6">
+<div style="max-width:860px;margin:0 auto;padding:8px 0 40px">
+
+<h2 style="font-size:22px;font-weight:800;color:var(--txt);margin-bottom:6px">📖 EuroLeague Fantasy Dashboard — Metrics Guide</h2>
+<p style="color:var(--txt2);font-size:13px;margin-bottom:28px">Everything you need to understand how each number is calculated and why it matters for your picks.</p>
+
+<!-- SECTION 1: RAW STATS -->
+<div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;margin-bottom:18px">
+<h3 style="color:var(--acc);font-size:14px;font-weight:800;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px">1 · Raw Statistics</h3>
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead><tr><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Stat</th><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Meaning</th><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">How it's computed</th></tr></thead>
+<tbody>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">FPT avg</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Season average fantasy points per game</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Provided by Dunkest/Fantaking. Approximate formula: PTS + REB + AST×1.5 + STL×2 + BLK×2 − TOV + bonuses (BA, FD, PF)</td></tr>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">CR</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Cost Rating — player price in fantasy</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Set by Dunkest platform. Range typically 5–30 CR. Changes weekly based on ownership and performance.</td></tr>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">GP</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Games Played this season</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Used to filter: players with GP&lt;4 get no Rec. Team Builder requires GP≥5.</td></tr>
+</tbody></table>
+</div>
+
+<!-- SECTION 2: FORM METRICS -->
+<div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;margin-bottom:18px">
+<h3 style="color:var(--acc);font-size:14px;font-weight:800;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px">2 · Form Metrics</h3>
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead><tr><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Stat</th><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Meaning</th><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Formula</th></tr></thead>
+<tbody>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Last 5</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Average FPT over the last 5 rounds played</td><td style="padding:8px 10px;border-top:1px solid var(--brd);font-family:monospace;color:#22d3ee">avg(FPT[last 5 rounds])</td></tr>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Trend %</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">How much better/worse a player is doing recently vs their season average. ▲ green = rising, ▼ red = falling.</td><td style="padding:8px 10px;border-top:1px solid var(--brd);font-family:monospace;color:#22d3ee">(Last5 − FPT_avg) / FPT_avg × 100</td></tr>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Stability</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Consistency of performance week to week. Higher = more predictable. Shown as bubble size in Value Map.</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Computed from historical FPT variance across all rounds played. Higher = less volatile scorer.</td></tr>
+</tbody></table>
+</div>
+
+<!-- SECTION 3: VALUE & PREDICTION -->
+<div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;margin-bottom:18px">
+<h3 style="color:var(--acc);font-size:14px;font-weight:800;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px">3 · Value &amp; Prediction</h3>
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead><tr><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Stat</th><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Meaning</th><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Formula / Method</th></tr></thead>
+<tbody>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Residual</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">How much a player over- or under-performs relative to what their CR price predicts. Positive = underpriced (better value than cost suggests).</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">A linear regression FPT~CR is fit across all active players. Residual = actual FPT − predicted FPT at that CR. Players above the regression line are bargains.</td></tr>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Exp. Next</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Predicted FPT for the upcoming round, before matchup adjustment. Weighted blend of recent and season-long performance.</td><td style="padding:8px 10px;border-top:1px solid var(--brd);font-family:monospace;color:#22d3ee">0.5×Last5 + 0.3×Prev5 + 0.2×FPT_avg<br><small style="color:var(--txt2)">(Prev5 = 5 rounds before the last 5)</small></td></tr>
+<tr><td style="padding:8px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Adj/vs ✦</td><td style="padding:8px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Matchup-adjusted prediction. ExpFPT multiplied by how easy/hard the next opponent's defense is for this position.</td><td style="padding:8px 10px;border-top:1px solid var(--brd);font-family:monospace;color:#22d3ee">AdjFPT = ExpFPT × DvP_multiplier<br><small style="color:var(--txt2)">(null if next-round schedule not yet published)</small></td></tr>
+</tbody></table>
+</div>
+
+<!-- SECTION 4: DvP MATCHUP -->
+<div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;margin-bottom:18px">
+<h3 style="color:var(--acc);font-size:14px;font-weight:800;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px">4 · Defense vs Position (DvP) &amp; Matchup</h3>
+<p style="color:var(--txt2);font-size:12.5px;margin-bottom:14px;line-height:1.7"><b style="color:var(--txt)">What it measures:</b> How many fantasy points the opposing team allows on average to each position (Guard / Forward / Center). A team with a high DvP for Guards = Guards score a lot against them = EASY matchup for your Guard.</p>
+<p style="color:var(--txt2);font-size:12.5px;margin-bottom:14px;line-height:1.7"><b style="color:var(--txt)">Data source:</b> InCrowd Sports API (official EuroLeague data feed). All completed games this season, per-player stats extracted, approx FPT computed as: <code style="background:var(--surf2);padding:1px 6px;border-radius:3px;color:#22d3ee">pts + reb + ast×1.5 + stl×2 + blk×2 − tov</code></p>
+<p style="color:var(--txt2);font-size:12.5px;margin-bottom:14px;line-height:1.7"><b style="color:var(--txt)">Multiplier:</b> Each team's DvP is divided by the league average for that position. <code style="background:var(--surf2);padding:1px 6px;border-radius:3px;color:#22d3ee">multiplier = team_DvP / league_avg_DvP</code>. A multiplier of 1.10 means opponents score 10% above average against that team. This multiplier is applied to ExpFPT to get AdjFPT.</p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+  <span style="padding:5px 14px;border-radius:20px;background:rgba(22,163,74,.2);color:#16a34a;font-weight:700;font-size:12px">🟢 EASY — best 25% of matchups</span>
+  <span style="padding:5px 14px;border-radius:20px;background:rgba(101,163,13,.2);color:#65a30d;font-weight:700;font-size:12px">🟡 FAVORABLE — top 26–50%</span>
+  <span style="padding:5px 14px;border-radius:20px;background:rgba(234,88,12,.2);color:#ea580c;font-weight:700;font-size:12px">🟠 TOUGH — bottom 26–50%</span>
+  <span style="padding:5px 14px;border-radius:20px;background:rgba(220,38,38,.2);color:#dc2626;font-weight:700;font-size:12px">🔴 HARD — worst 25%</span>
+</div>
+</div>
+
+<!-- SECTION 5: RECOMMENDATION LOGIC -->
+<div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;margin-bottom:18px">
+<h3 style="color:var(--acc);font-size:14px;font-weight:800;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px">5 · Recommendation Logic</h3>
+<p style="color:var(--txt2);font-size:12px;margin-bottom:14px">Rules applied in order — first match wins. Uses FPT_avg, Residual, Last5, and recent activity.</p>
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+<thead><tr>
+  <th style="text-align:left;padding:7px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Label</th>
+  <th style="text-align:left;padding:7px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Condition</th>
+  <th style="text-align:left;padding:7px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Meaning</th>
+</tr></thead>
+<tbody>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb" style="background:rgba(156,163,175,.2);color:#9ca3af;border:1px solid rgba(156,163,175,.3);font-size:10px;padding:2px 8px">N/A</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">FPT &lt; 3 or GP &lt; 4</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Not enough data. Hidden by default.</td></tr>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb rb-INACTIVE" style="font-size:10px;padding:2px 8px">⛔ INACTIVE</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">RndsSince &gt; 4</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Hasn't played in 5+ rounds.</td></tr>
+<tr style="background:rgba(16,185,129,.05)"><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb rb-STRONG BUY" style="font-size:10px;padding:2px 8px">🚀 STRONG BUY</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">FPT≥14 &amp; Res≥1.5 &amp; Last5≥FPT×0.75<br>OR Res≥2.5 &amp; FPT≥7 &amp; Last5≥FPT×0.7</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">High performer, great value, excellent recent form. Top pick.</td></tr>
+<tr style="background:rgba(34,197,94,.05)"><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb rb-BUY" style="font-size:10px;padding:2px 8px">✅ BUY</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">FPT≥14 &amp; Res≥0 &amp; Last5≥FPT×0.7<br>OR Res≥1.3 &amp; FPT≥5 &amp; Last5≥FPT×0.6</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Good value for cost, steady form. Solid pick.</td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb rb-PREMIUM" style="font-size:10px;padding:2px 8px">👑 PREMIUM</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">FPT≥14 &amp; Res≥−2.5 &amp; Last5≥FPT×0.6</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Elite scorer at fair price. Worth the CR.</td></tr>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb rb-WATCH" style="font-size:10px;padding:2px 8px">👀 WATCH</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">Res≥0.6 &amp; FPT≥4<br>OR Last5&gt;FPT×1.2 &amp; FPT≥6</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Slight value signal or recent surge. Monitor before buying.</td></tr>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb rb-HOLD" style="font-size:10px;padding:2px 8px">🤝 HOLD</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">No other rule matched</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Performing near expectations. No urgent action needed.</td></tr>
+<tr style="background:rgba(234,88,12,.05)"><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb rb-CAUTION" style="font-size:10px;padding:2px 8px">⚠️ CAUTION</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">Res&lt;−1.5<br>OR Last5&lt;FPT×0.6 &amp; FPT≥7<br>OR FPT≥14 but declining</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Overpriced or form is dropping. Think twice.</td></tr>
+<tr style="background:rgba(220,38,38,.05)"><td style="padding:7px 10px;border-top:1px solid var(--brd)"><span class="rb rb-SELL" style="font-size:10px;padding:2px 8px">🔴 SELL</span></td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2);font-family:monospace;font-size:11px">Res&lt;−2.5 &amp; FPT&lt;10 &amp; Last5&lt;FPT×0.8</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Overpriced AND out of form. Free up the CR.</td></tr>
+</tbody></table>
+</div>
+
+<!-- SECTION 6: TEAM BUILDER -->
+<div style="background:var(--surf);border:1px solid var(--brd);border-radius:12px;padding:20px;margin-bottom:18px">
+<h3 style="color:var(--acc);font-size:14px;font-weight:800;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px">6 · Team Builder</h3>
+<p style="color:var(--txt2);font-size:12.5px;margin-bottom:10px;line-height:1.7"><b style="color:var(--txt)">Scoring formula</b> (mirrors Fantaking):</p>
+<div style="background:var(--surf2);border-radius:8px;padding:12px 16px;font-family:monospace;font-size:13px;color:#22d3ee;margin-bottom:14px">
+  Score = Captain×2 + Starter₂ + … + Starter₆ + Bench₁×0.5 + … + Bench₄×0.5
+</div>
+<p style="color:var(--txt2);font-size:12.5px;margin-bottom:14px;line-height:1.7">All scoring uses <b style="color:var(--txt)">AdjFPT</b> (matchup-adjusted) when available, otherwise ExpFPT. The captain = player with highest AdjFPT (scores 2× in Fantaking).</p>
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead><tr><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Parameter</th><th style="text-align:left;padding:6px 10px;color:var(--txt2);font-size:11px;border-bottom:1px solid var(--brd)">Rule</th></tr></thead>
+<tbody>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Eligibility</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">GP ≥ 5, played within Max Inactive Rounds, Rec ≠ N/A, not INJURED</td></tr>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Starters (6)</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Picked greedily by highest AdjFPT within starter budget</td></tr>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">Bench (4)</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">Picked by best AdjFPT/CR efficiency (bench scores 0.5×, so cost matters more)</td></tr>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">3 Teams</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">🥇 Best Team → 🥈 Alt A (excludes top 2 from T1) → 🥉 Alt B (excludes top 4). Gives meaningful alternatives.</td></tr>
+<tr><td style="padding:7px 10px;border-top:1px solid var(--brd);font-weight:700;color:var(--txt)">RETURNING penalty</td><td style="padding:7px 10px;border-top:1px solid var(--brd);color:var(--txt2)">−10% (absent ≤2 rounds) · −18% (3–4 rounds) · −30% (5+ rounds)</td></tr>
+</tbody></table>
+</div>
+
 </div>
 </div>
 <div class="spotlight" id="spotlight">
@@ -539,7 +643,7 @@ function buildCharts(){
   const t1=RECS.filter(r=>byRec[r].length).map(r=>{
     const pts=byRec[r];
     return {name:r,x:pts.map(p=>p.CR),y:pts.map(p=>p.FPT),mode:'markers',type:'scatter',
-      marker:{color:RC[r],size:pts.map(p=>Math.max(6,p.Stab*400)),opacity:0.82,line:{color:'rgba(255,255,255,.15)',width:1}},
+      marker:{color:RC[r],size:pts.map(p=>Math.max(6,Math.min(p.Stab*40,20))),opacity:0.82,line:{color:'rgba(255,255,255,.15)',width:1}},
       text:pts.map(p=>`${p.Name} (${p.Pos})<br>${p.Team}<br>CR: ${p.CR} | FPT: ${p.FPT}<br>Residual: ${p.Res>0?'+':''}${p.Res}<br>Stab: ${p.Stab.toFixed(3)}`),
       customdata:pts.map(p=>p.Name),
       hovertemplate:'%{text}<extra></extra>'};
@@ -741,98 +845,123 @@ function calcTeamScore(team){
   return effectiveAdjFPT(s[0]) + s.slice(0,6).reduce((t,p)=>t+effectiveAdjFPT(p),0) + s.slice(6).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);
 }
 
+// Helper: run greedy optimizer with a set of excluded player names
+function findBestTeam(cands, candsByEff, budget, excluded){
+  const lCands=cands.filter(p=>!excluded.has(p.Name));
+  const lByEff=candsByEff.filter(p=>!excluded.has(p.Name));
+  if(lCands.length<10) return null;
+  const minCR=Math.min(...lCands.map(p=>p.CR));
+  let bestTeam=null,bestScore=-Infinity;
+  for(let bb=Math.ceil(4*minCR*2)/2; bb<=budget*0.5; bb+=0.5){
+    const sb=budget-bb;
+    const starters=[],sNames=new Set(); let sCR=0;
+    for(const p of lCands){
+      if(starters.length===6)break;
+      const reserve=(6-starters.length-1)*minCR;
+      if(sCR+p.CR+reserve<=sb){starters.push(p);sNames.add(p.Name);sCR+=p.CR;}
+    }
+    if(starters.length<6)continue;
+    const bench=[]; let bCR=0;
+    for(const p of lByEff){
+      if(bench.length===4)break;
+      if(sNames.has(p.Name))continue;
+      const reserve=(4-bench.length-1)*minCR;
+      if(bCR+p.CR+reserve<=bb){bench.push(p);bCR+=p.CR;}
+    }
+    if(bench.length<4)continue;
+    const score=calcTeamScore([...starters,...bench]);
+    if(score>bestScore){bestScore=score;bestTeam={players:[...starters,...bench],usedCR:sCR+bCR};}
+  }
+  return bestTeam;
+}
+
 function runOptimizer(){
   const budget=parseFloat(document.getElementById('budget-sl').value);
   const minFpt=parseFloat(document.getElementById('minfpt-sl').value);
   const maxInac=parseInt(document.getElementById('inac-sl').value);
   const el=document.getElementById('opt-result');
-  el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב קבוצה אופטימלית...</p>';
+  el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב 3 קבוצות...</p>';
   setTimeout(()=>{
-    // Starters: sorted by effectiveExpFPT (INJURED excluded, RETURNING reduced)
     const cands=DATA.filter(p=>effectiveAdjFPT(p)>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A'&&OVERRIDES[p.Name]!=='INJURED')
       .sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-    // Bench: sorted by effectiveAdjFPT/CR efficiency (bench = 0.5x so CR matters more)
     const candsByEff=[...cands].sort((a,b)=>(effectiveAdjFPT(b)/Math.max(b.CR,1))-(effectiveAdjFPT(a)/Math.max(a.CR,1)));
 
     if(cands.length<10){
       el.innerHTML=`<p style="color:#ef4444;text-align:center;padding:30px">רק ${cands.length} שחקנים עומדים בקריטריונים.<br>נסה להוריד Min FPT ל-${minFpt-1} או להגדיל Max Inactive Rounds.</p>`;
       return;
     }
-    const minCR=Math.min(...cands.map(p=>p.CR));
-    let bestTeam=null,bestScore=-Infinity;
 
-    // Budget-split optimization: try every bench budget from min possible to 50% of total
-    // Starters picked by ExpFPT, bench picked by ExpFPT/CR (efficiency)
-    for(let bb=Math.ceil(4*minCR*2)/2; bb<=budget*0.5; bb+=0.5){
-      const sb=budget-bb;
-      // Greedy starters: top ExpFPT within sb, reserve budget for remaining slots
-      const starters=[],sNames=new Set(); let sCR=0;
-      for(const p of cands){
-        if(starters.length===6)break;
-        const reserve=(6-starters.length-1)*minCR;
-        if(sCR+p.CR+reserve<=sb){starters.push(p);sNames.add(p.Name);sCR+=p.CR;}
-      }
-      if(starters.length<6)continue;
-      // Greedy bench: top Efficiency within bb, no overlap, reserve for remaining slots
-      const bench=[]; let bCR=0;
-      for(const p of candsByEff){
-        if(bench.length===4)break;
-        if(sNames.has(p.Name))continue;
-        const reserve=(4-bench.length-1)*minCR;
-        if(bCR+p.CR+reserve<=bb){bench.push(p);bCR+=p.CR;}
-      }
-      if(bench.length<4)continue;
-      const score=calcTeamScore([...starters,...bench]);
-      if(score>bestScore){bestScore=score;bestTeam={players:[...starters,...bench],usedCR:sCR+bCR};}
+    const results=[];
+    const globalExcluded=new Set();
+    for(let attempt=0;attempt<3;attempt++){
+      const t=findBestTeam(cands,candsByEff,budget,globalExcluded);
+      if(!t) break;
+      results.push(t);
+      // Exclude top 2 players by AdjFPT to force diversity in next attempt
+      [...t.players].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a))
+        .slice(0,2).forEach(p=>globalExcluded.add(p.Name));
     }
 
-    if(!bestTeam){
-      el.innerHTML=`<p style="color:#ef4444;text-align:center;padding:30px">לא נמצאה קבוצה תקפה בתקציב ${budget} CR.<br>נסה להגדיל את התקציב ל-${budget+5}.</p>`;
+    if(!results.length){
+      el.innerHTML=`<p style="color:#ef4444;text-align:center;padding:30px">לא נמצאה קבוצה תקפה בתקציב ${budget} CR.</p>`;
       return;
     }
-    displayTeam(bestTeam.players,bestTeam.usedCR,budget);
+    displayThreeTeams(results,budget);
   },50);
 }
 
-function displayTeam(team,usedCR,budget){
-  const sorted=[...team].sort((a,b)=>b.ExpFPT-a.ExpFPT);
+function buildTeamCard(team,usedCR,budget,rank){
+  const medals=['🥇','🥈','🥉'];
+  const labels=['Best Team','Alternative A','Alternative B'];
+  const sorted=[...team].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
   const starters=sorted.slice(0,6),bench=sorted.slice(6,10),captain=starters[0];
-  const score=calcTeamScore(sorted);
-  const capScore=captain.ExpFPT*2+starters.slice(1).reduce((s,p)=>s+p.ExpFPT,0)+bench.reduce((s,p)=>s+p.ExpFPT*0.5,0);
+  const capAdjScore=effectiveAdjFPT(captain)*2+starters.slice(1).reduce((s,p)=>s+effectiveAdjFPT(p),0)+bench.reduce((s,p)=>s+effectiveAdjFPT(p)*0.5,0);
   const pct=(usedCR/budget*100).toFixed(0);
-  const html=`
-    <div class="team-score-box">
-      <div class="tscore">${capScore.toFixed(1)} <span style="font-size:18px;color:var(--txt2)">exp FPT</span></div>
-      <div class="tscore-sub">CR used: ${usedCR.toFixed(1)} / ${budget} &nbsp;·&nbsp; ${(budget-usedCR).toFixed(1)} remaining</div>
-      <div class="cr-bar"><div class="cr-fill" style="width:${pct}%"></div></div>
-    </div>
-    <div class="team-grid">
-      <div class="team-section">
-        <div class="sec-title">⭐ Starting 6</div>
-        ${starters.map((p,i)=>`
-          <div class="pcard${i===0?' cap':''}" onclick="selectPlayer('${p.Name.replace(/'/g,"\\'")}')">
-            <div class="pc-pos" style="background:${RC[p.Rec]}22;color:${RC[p.Rec]}">${p.Pos}</div>
-            ${i===0?'<span class="cap-badge">C</span>':''}
-            <span class="pc-name">${p.Name}</span>
-            <span class="pc-cr">${p.CR}</span>
-            <span class="pc-fpt">${i===0?(effectiveExpFPT(p)*2).toFixed(1)+'*':effectiveExpFPT(p).toFixed(1)}${OVERRIDES[p.Name]==='RETURNING'?'<span style="font-size:9px;color:#22d3ee"> ↓</span>':''}</span>
-            <span class="rb rb-${p.Rec}" style="padding:2px 6px;font-size:10px">${RI[p.Rec]}</span>
-          </div>`).join('')}
+  const borderColors=['#f59e0b','#94a3b8','#b45309'];
+  return `
+    <div style="border:2px solid ${borderColors[rank]||'#334155'};border-radius:14px;padding:18px;margin-bottom:22px">
+      <div style="font-size:17px;font-weight:800;color:${borderColors[rank]||'var(--acc)'};margin-bottom:12px">${medals[rank]||'·'} ${labels[rank]||'Option '+(rank+1)}</div>
+      <div class="team-score-box">
+        <div class="tscore">${capAdjScore.toFixed(1)} <span style="font-size:18px;color:var(--txt2)">adj FPT</span></div>
+        <div class="tscore-sub">CR used: ${usedCR.toFixed(1)} / ${budget} &nbsp;·&nbsp; ${(budget-usedCR).toFixed(1)} remaining</div>
+        <div class="cr-bar"><div class="cr-fill" style="width:${pct}%"></div></div>
       </div>
-      <div class="team-section">
-        <div class="sec-title">🪑 Bench × 0.5</div>
-        ${bench.map(p=>`
-          <div class="pcard bench" onclick="selectPlayer('${p.Name.replace(/'/g,"\\'")}')">
-            <div class="pc-pos" style="background:${RC[p.Rec]}22;color:${RC[p.Rec]}">${p.Pos}</div>
-            <span class="pc-name">${p.Name}</span>
-            <span class="pc-cr">${p.CR}</span>
-            <span class="pc-fpt">${(p.ExpFPT*0.5).toFixed(1)}</span>
-            <span class="rb rb-${p.Rec}" style="padding:2px 6px;font-size:10px">${RI[p.Rec]}</span>
-          </div>`).join('')}
-        <div style="margin-top:12px;font-size:11px;color:var(--txt2)">* Captain scores 2× · Bench scores 0.5×</div>
+      <div class="team-grid">
+        <div class="team-section">
+          <div class="sec-title">⭐ Starting 6</div>
+          ${starters.map((p,i)=>`
+            <div class="pcard${i===0?' cap':''}" onclick="selectPlayer('${p.Name.replace(/'/g,"\\'")}')">
+              <div class="pc-pos" style="background:${RC[p.Rec]}22;color:${RC[p.Rec]}">${p.Pos}</div>
+              ${i===0?'<span class="cap-badge">C</span>':''}
+              <span class="pc-name">${p.Name}</span>
+              <span class="pc-cr">${p.CR}</span>
+              <span class="pc-fpt">${i===0?(effectiveAdjFPT(p)*2).toFixed(1)+'*':effectiveAdjFPT(p).toFixed(1)}${OVERRIDES[p.Name]==='RETURNING'?'<span style="font-size:9px;color:#22d3ee"> ↓</span>':''}</span>
+              <span class="rb rb-${p.Rec}" style="padding:2px 6px;font-size:10px">${RI[p.Rec]}</span>
+            </div>`).join('')}
+        </div>
+        <div class="team-section">
+          <div class="sec-title">🪑 Bench × 0.5</div>
+          ${bench.map(p=>`
+            <div class="pcard bench" onclick="selectPlayer('${p.Name.replace(/'/g,"\\'")}')">
+              <div class="pc-pos" style="background:${RC[p.Rec]}22;color:${RC[p.Rec]}">${p.Pos}</div>
+              <span class="pc-name">${p.Name}</span>
+              <span class="pc-cr">${p.CR}</span>
+              <span class="pc-fpt">${(effectiveAdjFPT(p)*0.5).toFixed(1)}</span>
+              <span class="rb rb-${p.Rec}" style="padding:2px 6px;font-size:10px">${RI[p.Rec]}</span>
+            </div>`).join('')}
+          <div style="margin-top:12px;font-size:11px;color:var(--txt2)">* Captain scores 2× · Bench scores 0.5×</div>
+        </div>
       </div>
     </div>`;
-  document.getElementById('opt-result').innerHTML=html;
+}
+
+function displayThreeTeams(teams,budget){
+  document.getElementById('opt-result').innerHTML=teams.map((t,i)=>buildTeamCard(t.players,t.usedCR,budget,i)).join('');
+}
+
+// Keep displayTeam for backward compatibility
+function displayTeam(team,usedCR,budget){
+  document.getElementById('opt-result').innerHTML=buildTeamCard(team,usedCR,budget,0);
 }
 
 renderTable();
