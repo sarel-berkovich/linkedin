@@ -884,36 +884,86 @@ function renderHistory(){
 
 // OPTIMIZER
 function calcTeamScore(team){
+  // captain = highest effectiveAdjFPT; starters = next 5; bench = last 4
   const s=[...team].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-  return effectiveAdjFPT(s[0]) + s.slice(0,6).reduce((t,p)=>t+effectiveAdjFPT(p),0) + s.slice(6).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);
+  return effectiveAdjFPT(s[0])*2 + s.slice(1,6).reduce((t,p)=>t+effectiveAdjFPT(p),0) + s.slice(6).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);
 }
 
-// Helper: run greedy optimizer with a set of excluded player names
+// Valid starting-5 formations (guard count, forward count, center count)
+// Squad total must be 4G + 4F + 2C = 10 players
+const VALID_FORMS=[{G:2,F:2,C:1},{G:1,F:2,C:2},{G:1,F:3,C:1},{G:2,F:1,C:2},{G:3,F:1,C:1}];
+
+// Pick up to `count` best players of `pos` from `pool` within `availBudget`
+// leaving at least `reserve` budget for remaining slots
+function pickByPos(pool, used, pos, count, availBudget, minCR){
+  const picked=[];
+  let left=availBudget;
+  const sorted=pool.filter(p=>!used.has(p.Name)&&p.Pos===pos)
+    .sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+  for(const p of sorted){
+    if(picked.length>=count)break;
+    const reserve=(count-picked.length-1)*minCR;
+    if(p.CR<=left-reserve){picked.push(p);used.add(p.Name);left-=p.CR;}
+  }
+  return {picked, spent: availBudget-left};
+}
+
+// Helper: run position-constrained greedy optimizer
 function findBestTeam(cands, candsByEff, budget, excluded){
-  const lCands=cands.filter(p=>!excluded.has(p.Name));
-  const lByEff=candsByEff.filter(p=>!excluded.has(p.Name));
-  if(lCands.length<10) return null;
-  const minCR=Math.min(...lCands.map(p=>p.CR));
-  let bestTeam=null,bestScore=-Infinity;
-  for(let bb=Math.ceil(4*minCR*2)/2; bb<=budget*0.5; bb+=0.5){
-    const sb=budget-bb;
-    const starters=[],sNames=new Set(); let sCR=0;
-    for(const p of lCands){
-      if(starters.length===6)break;
-      const reserve=(6-starters.length-1)*minCR;
-      if(sCR+p.CR+reserve<=sb){starters.push(p);sNames.add(p.Name);sCR+=p.CR;}
+  const pool=cands.filter(p=>!excluded.has(p.Name));
+  if(pool.length<10) return null;
+  const minCR=Math.min(...pool.map(p=>p.CR));
+  let bestTeam=null, bestScore=-Infinity;
+
+  for(const form of VALID_FORMS){
+    // Remaining positions after starting-5:
+    const remG=4-form.G, remF=4-form.F, remC=2-form.C; // = 5 total
+    // Try different starter/bench budget splits
+    for(let sFrac=0.55; sFrac<=0.85; sFrac+=0.05){
+      const sBudget=budget*sFrac;
+      const bBudget=budget-sBudget;
+
+      // ── Pick starting 5 (by position quota) ──
+      const s5used=new Set();
+      let s5Budget=sBudget;
+      const gPicked=pickByPos(pool,s5used,'G',form.G,s5Budget,minCR);
+      if(gPicked.picked.length<form.G) continue;
+      s5Budget-=gPicked.spent;
+      const fPicked=pickByPos(pool,s5used,'F',form.F,s5Budget,minCR);
+      if(fPicked.picked.length<form.F) continue;
+      s5Budget-=fPicked.spent;
+      const cPicked=pickByPos(pool,s5used,'C',form.C,s5Budget,minCR);
+      if(cPicked.picked.length<form.C) continue;
+      s5Budget-=cPicked.spent;
+      const starter5=[...gPicked.picked,...fPicked.picked,...cPicked.picked];
+
+      // ── Pick remaining 5 (remG G + remF F + remC C) for 6th starter + bench ──
+      // Budget left: remaining sBudget + full bBudget
+      const remBudget=s5Budget+bBudget;
+      const remUsed=new Set(s5used);
+      const rg=pickByPos(pool,remUsed,'G',remG,remBudget,minCR);
+      if(rg.picked.length<remG) continue;
+      const rf=pickByPos(pool,remUsed,'F',remF,remBudget-rg.spent,minCR);
+      if(rf.picked.length<remF) continue;
+      const rc=pickByPos(pool,remUsed,'C',remC,remBudget-rg.spent-rf.spent,minCR);
+      if(rc.picked.length<remC) continue;
+      const rem5=[...rg.picked,...rf.picked,...rc.picked];
+
+      // 6th starter = best in rem5 (any pos); bench = rest
+      rem5.sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+      const sixth=rem5[0], bench=rem5.slice(1,5);
+      if(bench.length<4) continue;
+
+      const allPlayers=[...starter5, sixth, ...bench];
+      const usedCR=allPlayers.reduce((s,p)=>s+p.CR,0);
+      if(usedCR>budget) continue;
+
+      const score=calcTeamScore(allPlayers);
+      if(score>bestScore){
+        bestScore=score;
+        bestTeam={players:allPlayers, usedCR, formation:form};
+      }
     }
-    if(starters.length<6)continue;
-    const bench=[]; let bCR=0;
-    for(const p of lByEff){
-      if(bench.length===4)break;
-      if(sNames.has(p.Name))continue;
-      const reserve=(4-bench.length-1)*minCR;
-      if(bCR+p.CR+reserve<=bb){bench.push(p);bCR+=p.CR;}
-    }
-    if(bench.length<4)continue;
-    const score=calcTeamScore([...starters,...bench]);
-    if(score>bestScore){bestScore=score;bestTeam={players:[...starters,...bench],usedCR:sCR+bCR};}
   }
   return bestTeam;
 }
@@ -940,9 +990,9 @@ function runOptimizer(){
       const t=findBestTeam(cands,candsByEff,budget,globalExcluded);
       if(!t) break;
       results.push(t);
-      // Exclude top 2 players by AdjFPT to force diversity in next attempt
+      // Exclude top 5 scorers from this team to force meaningful diversity
       [...t.players].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a))
-        .slice(0,2).forEach(p=>globalExcluded.add(p.Name));
+        .slice(0,5).forEach(p=>globalExcluded.add(p.Name));
     }
 
     if(!results.length){
@@ -953,17 +1003,27 @@ function runOptimizer(){
   },50);
 }
 
-function buildTeamCard(team,usedCR,budget,rank){
+function buildTeamCard(team,usedCR,budget,rank,formation){
   const medals=['🥇','🥈','🥉'];
   const labels=['Best Team','Alternative A','Alternative B'];
   const sorted=[...team].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-  const starters=sorted.slice(0,6),bench=sorted.slice(6,10),captain=starters[0];
+  const captain=sorted[0];
+  // Starting 6 = first 6 by AdjFPT; bench = last 4
+  const starters=sorted.slice(0,6), bench=sorted.slice(6,10);
   const capAdjScore=effectiveAdjFPT(captain)*2+starters.slice(1).reduce((s,p)=>s+effectiveAdjFPT(p),0)+bench.reduce((s,p)=>s+effectiveAdjFPT(p)*0.5,0);
   const pct=(usedCR/budget*100).toFixed(0);
   const borderColors=['#f59e0b','#94a3b8','#b45309'];
+  // Formation label
+  const fLabel=formation?`${formation.G}G · ${formation.F}F · ${formation.C}C`:'';
+  // Position counts badge
+  const gC=team.filter(p=>p.Pos==='G').length, fC=team.filter(p=>p.Pos==='F').length, cC=team.filter(p=>p.Pos==='C').length;
   return `
     <div style="border:2px solid ${borderColors[rank]||'#334155'};border-radius:14px;padding:18px;margin-bottom:22px">
-      <div style="font-size:17px;font-weight:800;color:${borderColors[rank]||'var(--acc)'};margin-bottom:12px">${medals[rank]||'·'} ${labels[rank]||'Option '+(rank+1)}</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+        <div style="font-size:17px;font-weight:800;color:${borderColors[rank]||'var(--acc)'}">${medals[rank]||'·'} ${labels[rank]||'Option '+(rank+1)}</div>
+        ${fLabel?`<div style="font-size:11px;background:#1a2035;border:1px solid #2a3552;border-radius:6px;padding:3px 8px;color:var(--txt2)">Starting 5: ${fLabel}</div>`:''}
+        <div style="font-size:11px;background:#1a2035;border:1px solid #2a3552;border-radius:6px;padding:3px 8px;color:var(--txt2)">${gC}G · ${fC}F · ${cC}C total</div>
+      </div>
       <div class="team-score-box">
         <div class="tscore">${capAdjScore.toFixed(1)} <span style="font-size:18px;color:var(--txt2)">adj FPT</span></div>
         <div class="tscore-sub">CR used: ${usedCR.toFixed(1)} / ${budget} &nbsp;·&nbsp; ${(budget-usedCR).toFixed(1)} remaining</div>
@@ -999,7 +1059,7 @@ function buildTeamCard(team,usedCR,budget,rank){
 }
 
 function displayThreeTeams(teams,budget){
-  document.getElementById('opt-result').innerHTML=teams.map((t,i)=>buildTeamCard(t.players,t.usedCR,budget,i)).join('');
+  document.getElementById('opt-result').innerHTML=teams.map((t,i)=>buildTeamCard(t.players,t.usedCR,budget,i,t.formation)).join('');
 }
 
 // Keep displayTeam for backward compatibility
