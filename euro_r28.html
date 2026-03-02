@@ -899,62 +899,93 @@ function calcTeamScore(team){
 // Squad total must be 4G + 4F + 2C = 10 players
 const VALID_FORMS=[{G:2,F:2,C:1},{G:1,F:2,C:2},{G:1,F:3,C:1},{G:2,F:1,C:2},{G:3,F:1,C:1}];
 
-// Helper: run position-constrained greedy optimizer
-// Single pass: iterate pool (sorted by AdjFPT desc), pick player if position quota not full
-// Reserve = (all remaining slots - 1) * minCR → ensures budget for ALL remaining positions
+// Sophisticated position-constrained optimizer:
+// - Smart reserve: uses per-position minimum costs (not global minCR)
+// - Two sort orders: AdjFPT (best scorer) + AdjFPT/CR (best value)
+// - Fine-grained budget splits (23 steps) for low-budget scenarios
+// - Feasibility pre-check: skips impossible formations early
 function findBestTeam(cands, candsByEff, budget, excluded){
   const pool=cands.filter(p=>!excluded.has(p.Name));
   if(pool.length<10) return null;
-  const minCR=Math.min(...pool.map(p=>p.CR));
+
+  // Pre-compute cheapest costs per position (sorted ascending)
+  const cheapCosts={};
+  for(const pos of ['G','F','C']){
+    cheapCosts[pos]=pool.filter(p=>p.Pos===pos).map(p=>p.CR).sort((a,b)=>a-b);
+  }
+
+  // Min budget to fill `count` remaining slots of `pos` (using cheapest available)
+  function minFill(pos,count){
+    let t=0;
+    for(let i=0;i<count&&i<cheapCosts[pos].length;i++) t+=cheapCosts[pos][i];
+    return t;
+  }
+
+  // Smart reserve: sum of min costs for all remaining position slots
+  function smartReserve(quota){
+    return minFill('G',quota.G||0)+minFill('F',quota.F||0)+minFill('C',quota.C||0);
+  }
+
+  // Two pool orderings: maximize score OR maximize value
+  const byFPT=[...pool]; // already sorted by effectiveAdjFPT desc
+  const byEff=[...pool].sort((a,b)=>(effectiveAdjFPT(b)/Math.max(b.CR,1))-(effectiveAdjFPT(a)/Math.max(a.CR,1)));
+
   let bestTeam=null, bestScore=-Infinity;
+
+  // Quick global feasibility check
+  const minTotal=minFill('G',4)+minFill('F',4)+minFill('C',2);
+  if(minTotal>budget) return null;
 
   for(const form of VALID_FORMS){
     const remG=4-form.G, remF=4-form.F, remC=2-form.C;
+    const s5min=minFill('G',form.G)+minFill('F',form.F)+minFill('C',form.C);
+    const rem5min=minFill('G',remG)+minFill('F',remF)+minFill('C',remC);
 
-    for(let sFrac=0.50; sFrac<=0.90; sFrac+=0.05){
-      const sBudget=budget*sFrac;
-      const bBudget=budget-sBudget;
+    for(const sortedPool of [byFPT, byEff]){
+      for(let sFrac=0.48; sFrac<=0.92; sFrac+=0.02){
+        const sBudget=budget*sFrac;
+        const bBudget=budget-sFrac;
+        if(s5min>sBudget) continue;    // impossible for starters
+        if(rem5min>bBudget) continue;  // impossible for bench
 
-      // ── Pick starting 5: single greedy pass with cross-position budget reserve ──
-      const s5=[]; let s5CR=0; const s5used=new Set();
-      const s5q={G:form.G, F:form.F, C:form.C};
-      for(const p of pool){
-        if(s5.length===5) break;
-        if(!s5q[p.Pos]) continue;                       // position quota full
-        const slotsLeft=5-s5.length;
-        const reserve=(slotsLeft-1)*minCR;              // reserve for ALL remaining slots
-        if(s5CR+p.CR+reserve<=sBudget){
-          s5.push(p); s5used.add(p.Name); s5CR+=p.CR; s5q[p.Pos]--;
+        // ── Pick starting 5: smart-reserve greedy ──
+        const s5=[]; let s5CR=0; const s5used=new Set();
+        const s5q={G:form.G, F:form.F, C:form.C};
+        for(const p of sortedPool){
+          if(s5.length===5) break;
+          if(!s5q[p.Pos]) continue;
+          const remAfter={G:s5q.G,F:s5q.F,C:s5q.C}; remAfter[p.Pos]--;
+          if(s5CR+p.CR+smartReserve(remAfter)<=sBudget){
+            s5.push(p); s5used.add(p.Name); s5CR+=p.CR; s5q[p.Pos]--;
+          }
         }
-      }
-      if(s5.length<5 || s5q.G || s5q.F || s5q.C) continue;
+        if(s5.length<5||s5q.G||s5q.F||s5q.C) continue;
 
-      // ── Pick remaining 5 (remG G + remF F + remC C): same single-pass logic ──
-      const remBudget=(sBudget-s5CR)+bBudget;
-      const rem5=[]; let rem5CR=0;
-      const remQ={G:remG, F:remF, C:remC};
-      for(const p of pool){
-        if(s5used.has(p.Name)) continue;
-        if(rem5.length===5) break;
-        if(!remQ[p.Pos]) continue;
-        const slotsLeft=5-rem5.length;
-        const reserve=(slotsLeft-1)*minCR;
-        if(rem5CR+p.CR+reserve<=remBudget){
-          rem5.push(p); rem5CR+=p.CR; remQ[p.Pos]--;
+        // ── Pick remaining 5: smart-reserve greedy ──
+        const remBudget=(sBudget-s5CR)+bBudget;
+        const rem5=[]; let rem5CR=0;
+        const remQ={G:remG,F:remF,C:remC};
+        for(const p of sortedPool){
+          if(s5used.has(p.Name)) continue;
+          if(rem5.length===5) break;
+          if(!remQ[p.Pos]) continue;
+          const remAfter={G:remQ.G,F:remQ.F,C:remQ.C}; remAfter[p.Pos]--;
+          if(rem5CR+p.CR+smartReserve(remAfter)<=remBudget){
+            rem5.push(p); rem5CR+=p.CR; remQ[p.Pos]--;
+          }
         }
-      }
-      if(rem5.length<5 || remQ.G || remQ.F || remQ.C) continue;
+        if(rem5.length<5||remQ.G||remQ.F||remQ.C) continue;
 
-      // 6th starter = best in rem5 by AdjFPT; bench = rest
-      rem5.sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-      const allPlayers=[...s5,...rem5];
-      const usedCR=allPlayers.reduce((s,p)=>s+p.CR,0);
-      if(usedCR>budget) continue;
+        rem5.sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+        const allPlayers=[...s5,...rem5];
+        const usedCR=allPlayers.reduce((s,p)=>s+p.CR,0);
+        if(usedCR>budget) continue;
 
-      const score=calcTeamScore(allPlayers);
-      if(score>bestScore){
-        bestScore=score;
-        bestTeam={players:allPlayers, usedCR, formation:form};
+        const score=calcTeamScore(allPlayers);
+        if(score>bestScore){
+          bestScore=score;
+          bestTeam={players:allPlayers, usedCR, formation:form};
+        }
       }
     }
   }
