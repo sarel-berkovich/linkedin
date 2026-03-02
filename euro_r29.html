@@ -744,10 +744,16 @@ function buildCharts(){
 
   // Position violin
   Plotly.newPlot('chart-pos',['G','F','C'].map(pos=>{
-    const v=active.filter(p=>p.Pos===pos).map(p=>p.FPT);
-    return {name:{G:'Guards',F:'Forwards',C:'Centers'}[pos],x:v,type:'violin',
-      box:{visible:true},meanline:{visible:true},opacity:0.75,
-      marker:{color:{G:'#3b82f6',F:'#10b981',C:'#f97316'}[pos]}};
+    const pts=active.filter(p=>p.Pos===pos);
+    const clr={G:'#3b82f6',F:'#10b981',C:'#f97316'}[pos];
+    return {name:{G:'Guards',F:'Forwards',C:'Centers'}[pos],
+      x:pts.map(p=>p.FPT),
+      text:pts.map(p=>`<b>${p.Name}</b><br>${p.Team} · CR ${p.CR}<br>FPT: ${p.FPT.toFixed(1)}`),
+      type:'violin',box:{visible:true},meanline:{visible:true},opacity:0.8,
+      points:'all',jitter:0.4,pointpos:0,
+      hovertemplate:'%{text}<extra></extra>',
+      marker:{color:clr,size:5,opacity:0.7},
+      line:{color:clr}};
   }),{...PLT,xaxis:{...PLT.xaxis,title:'Season FPT avg'}},{responsive:true,displayModeBar:false});
 }
 
