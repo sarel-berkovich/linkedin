@@ -930,6 +930,32 @@ function findBestTeam(cands, candsByEff, budget, excluded){
   const byFPT=[...pool]; // already sorted by effectiveAdjFPT desc
   const byEff=[...pool].sort((a,b)=>(effectiveAdjFPT(b)/Math.max(b.CR,1))-(effectiveAdjFPT(a)/Math.max(a.CR,1)));
 
+  // Upgrade pass: after greedy, repeatedly swap any player for the best same-position
+  // player within remaining budget (higher AdjFPT). Uses extra budget when available.
+  function tryUpgrade(players){
+    const used=new Set(players.map(p=>p.Name));
+    const result=[...players];
+    let usedCR=result.reduce((s,p)=>s+p.CR,0);
+    let improved=true;
+    while(improved){
+      improved=false;
+      for(let i=0;i<result.length;i++){
+        const cur=result[i];
+        const avail=budget-usedCR+cur.CR;
+        const better=byFPT.find(p=>
+          p.Pos===cur.Pos && !used.has(p.Name) && p.CR<=avail &&
+          effectiveAdjFPT(p)>effectiveAdjFPT(cur)
+        );
+        if(better){
+          used.delete(cur.Name); used.add(better.Name);
+          usedCR=usedCR-cur.CR+better.CR;
+          result[i]=better; improved=true; break;
+        }
+      }
+    }
+    return {players:result, usedCR};
+  }
+
   let bestTeam=null, bestScore=-Infinity;
 
   // Quick global feasibility check
@@ -944,7 +970,7 @@ function findBestTeam(cands, candsByEff, budget, excluded){
     for(const sortedPool of [byFPT, byEff]){
       for(let sFrac=0.48; sFrac<=0.92; sFrac+=0.02){
         const sBudget=budget*sFrac;
-        const bBudget=budget-sFrac;
+        const bBudget=budget-sBudget;
         if(s5min>sBudget) continue;    // impossible for starters
         if(rem5min>bBudget) continue;  // impossible for bench
 
@@ -977,14 +1003,15 @@ function findBestTeam(cands, candsByEff, budget, excluded){
         if(rem5.length<5||remQ.G||remQ.F||remQ.C) continue;
 
         rem5.sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-        const allPlayers=[...s5,...rem5];
-        const usedCR=allPlayers.reduce((s,p)=>s+p.CR,0);
-        if(usedCR>budget) continue;
 
-        const score=calcTeamScore(allPlayers);
+        // ── Upgrade pass: replace cheap players with better ones using slack budget ──
+        const up=tryUpgrade([...s5,...rem5]);
+        if(up.usedCR>budget) continue;
+
+        const score=calcTeamScore(up.players);
         if(score>bestScore){
           bestScore=score;
-          bestTeam={players:allPlayers, usedCR, formation:form};
+          bestTeam={players:up.players, usedCR:up.usedCR, formation:form};
         }
       }
     }
