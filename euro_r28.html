@@ -1055,6 +1055,7 @@ function runOptimizer(){
 }
 
 function buildTeamCard(team,usedCR,budget,rank,formation){
+  const mpC={'EASY':'#16a34a','FAVORABLE':'#65a30d','TOUGH':'#ea580c','HARD':'#dc2626'};
   const medals=['🥇','🥈','🥉'];
   const labels=['Best Team','Alternative A','Alternative B'];
   const sorted=[...team].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
@@ -1102,6 +1103,7 @@ function buildTeamCard(team,usedCR,budget,rank,formation){
               <span class="pc-cr">${p.CR}</span>
               <span class="pc-fpt">${(effectiveAdjFPT(p)*0.5).toFixed(1)}</span>
               <span class="rb rb-${p.Rec}" style="padding:2px 6px;font-size:10px">${RI[p.Rec]}</span>
+              ${p.OppTLA?`<span style="font-size:10px;font-weight:700;color:${mpC[p.Matchup]||'#9ca3af'};white-space:nowrap;flex-shrink:0">vs ${p.OppTLA} ${p.Matchup||''}</span>`:''}
             </div>`).join('')}
           <div style="margin-top:12px;font-size:11px;color:var(--txt2)">* Captain scores 2× · Bench scores 0.5×</div>
         </div>
