@@ -1088,7 +1088,10 @@ function buildTeamCard(team,usedCR,budget,rank,formation){
             <div class="pcard${i===0?' cap':''}" onclick="selectPlayer('${p.Name.replace(/'/g,"\\'")}')">
               <div class="pc-pos" style="background:${RC[p.Rec]}22;color:${RC[p.Rec]}">${p.Pos}</div>
               ${i===0?'<span class="cap-badge">C</span>':''}
-              <span class="pc-name">${p.Name}</span>
+              <div style="flex:1;min-width:0;overflow:hidden">
+                <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.Name}</div>
+                ${p.OppTLA?`<div style="font-size:10px;font-weight:700;color:${mpC[p.Matchup]||'#9ca3af'}">vs ${p.OppTLA} ${p.Matchup||''}</div>`:''}
+              </div>
               <span class="pc-cr">${p.CR}</span>
               <span class="pc-fpt">${i===0?(effectiveAdjFPT(p)*2).toFixed(1)+'*':effectiveAdjFPT(p).toFixed(1)}${OVERRIDES[p.Name]==='RETURNING'?'<span style="font-size:9px;color:#22d3ee"> ↓</span>':''}</span>
               <span class="rb rb-${p.Rec}" style="padding:2px 6px;font-size:10px">${RI[p.Rec]}</span>
@@ -1099,11 +1102,13 @@ function buildTeamCard(team,usedCR,budget,rank,formation){
           ${bench.map(p=>`
             <div class="pcard bench" onclick="selectPlayer('${p.Name.replace(/'/g,"\\'")}')">
               <div class="pc-pos" style="background:${RC[p.Rec]}22;color:${RC[p.Rec]}">${p.Pos}</div>
-              <span class="pc-name">${p.Name}</span>
+              <div style="flex:1;min-width:0;overflow:hidden">
+                <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.Name}</div>
+                ${p.OppTLA?`<div style="font-size:10px;font-weight:700;color:${mpC[p.Matchup]||'#9ca3af'}">vs ${p.OppTLA} ${p.Matchup||''}</div>`:''}
+              </div>
               <span class="pc-cr">${p.CR}</span>
               <span class="pc-fpt">${(effectiveAdjFPT(p)*0.5).toFixed(1)}</span>
               <span class="rb rb-${p.Rec}" style="padding:2px 6px;font-size:10px">${RI[p.Rec]}</span>
-              ${p.OppTLA?`<span style="font-size:10px;font-weight:700;color:${mpC[p.Matchup]||'#9ca3af'};white-space:nowrap;flex-shrink:0">vs ${p.OppTLA} ${p.Matchup||''}</span>`:''}
             </div>`).join('')}
           <div style="margin-top:12px;font-size:11px;color:var(--txt2)">* Captain scores 2× · Bench scores 0.5×</div>
         </div>
