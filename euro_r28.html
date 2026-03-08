@@ -926,9 +926,20 @@ function findBestTeam(cands, candsByEff, budget, excluded){
     return minFill('G',quota.G||0)+minFill('F',quota.F||0)+minFill('C',quota.C||0);
   }
 
-  // Two pool orderings: maximize score OR maximize value
+  // Two deterministic orderings + random perturbations for multi-start global search
   const byFPT=[...pool]; // already sorted by effectiveAdjFPT desc
   const byEff=[...pool].sort((a,b)=>(effectiveAdjFPT(b)/Math.max(b.CR,1))-(effectiveAdjFPT(a)/Math.max(a.CR,1)));
+  // 300 random orderings: add ±2 FPT noise so greedy explores different player combos
+  // This catches cases where slightly cheaper starters free up CR for a much better bench
+  const RAND_RUNS=300;
+  const randPools=[];
+  for(let r=0;r<RAND_RUNS;r++){
+    randPools.push([...pool].sort((a,b)=>
+      (effectiveAdjFPT(b)+(Math.random()-0.5)*4)-
+      (effectiveAdjFPT(a)+(Math.random()-0.5)*4)
+    ));
+  }
+  const allPools=[byFPT,byEff,...randPools];
 
   // Upgrade pass: after greedy, repeatedly swap any player for the best same-position
   // player within remaining budget (higher AdjFPT). Uses extra budget when available.
@@ -967,7 +978,7 @@ function findBestTeam(cands, candsByEff, budget, excluded){
     const s5min=minFill('G',form.G)+minFill('F',form.F)+minFill('C',form.C);
     const rem5min=minFill('G',remG)+minFill('F',remF)+minFill('C',remC);
 
-    for(const sortedPool of [byFPT, byEff]){
+    for(const sortedPool of allPools){
       for(let sFrac=0.48; sFrac<=0.92; sFrac+=0.02){
         const sBudget=budget*sFrac;
         const bBudget=budget-sBudget;
@@ -1024,7 +1035,7 @@ function runOptimizer(){
   const minFpt=parseFloat(document.getElementById('minfpt-sl').value);
   const maxInac=parseInt(document.getElementById('inac-sl').value);
   const el=document.getElementById('opt-result');
-  el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב 3 קבוצות...</p>';
+  el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב 3 קבוצות — חיפוש אופטימום (300 ניסיונות)...</p>';
   setTimeout(()=>{
     const cands=DATA.filter(p=>effectiveAdjFPT(p)>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A'&&OVERRIDES[p.Name]!=='INJURED')
       .sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
