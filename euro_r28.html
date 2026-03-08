@@ -1036,14 +1036,19 @@ function runOptimizer(){
     }
 
     const results=[];
-    const globalExcluded=new Set();
+    let prevExcluded=new Set();
     for(let attempt=0;attempt<3;attempt++){
-      const t=findBestTeam(cands,candsByEff,budget,globalExcluded);
+      const t=findBestTeam(cands,candsByEff,budget,prevExcluded);
       if(!t) break;
       results.push(t);
-      // Exclude top 5 scorers from this team to force meaningful diversity
-      [...t.players].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a))
-        .slice(0,5).forEach(p=>globalExcluded.add(p.Name));
+      // Next team: exclude top 3 starters + top 2 bench from this team
+      // → guarantees max 3 shared starters + max 2 shared bench (non-accumulated)
+      const byAdj=[...t.players].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+      const starters=byAdj.slice(0,6), bench=byAdj.slice(6,10);
+      prevExcluded=new Set([
+        ...starters.slice(0,3).map(p=>p.Name),
+        ...bench.slice(0,2).map(p=>p.Name)
+      ]);
     }
 
     if(!results.length){
