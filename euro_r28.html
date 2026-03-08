@@ -1049,11 +1049,29 @@ function runOptimizer(){
     const results=[];
     let prevExcluded=new Set();
     for(let attempt=0;attempt<3;attempt++){
-      const t=findBestTeam(cands,candsByEff,budget,prevExcluded);
+      // T3 must differ from T1 by ≥2 starters (share at most 4 of 6)
+      const t1StarterNames = attempt===2 && results.length>=1
+        ? new Set([...results[0].players].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a)).slice(0,6).map(p=>p.Name))
+        : null;
+      const excl=new Set(prevExcluded);
+      let t=null;
+      for(let retry=0;retry<6;retry++){
+        const candidate=findBestTeam(cands,candsByEff,budget,excl);
+        if(!candidate) break;
+        if(t1StarterNames){
+          const t3s=[...candidate.players].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a)).slice(0,6);
+          const shared=t3s.filter(p=>t1StarterNames.has(p.Name));
+          if(shared.length<=4){t=candidate;break;} // ≥2 differ ✓
+          // Too similar to T1 — exclude weakest shared starter and retry
+          shared.sort((a,b)=>effectiveAdjFPT(a)-effectiveAdjFPT(b));
+          excl.add(shared[0].Name);
+        } else {
+          t=candidate; break;
+        }
+      }
       if(!t) break;
       results.push(t);
-      // Next team: exclude top 3 starters + top 2 bench from this team
-      // → guarantees max 3 shared starters + max 2 shared bench (non-accumulated)
+      // Next team: exclude top 3 starters + top 2 bench (non-accumulated)
       const byAdj=[...t.players].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
       const starters=byAdj.slice(0,6), bench=byAdj.slice(6,10);
       prevExcluded=new Set([
