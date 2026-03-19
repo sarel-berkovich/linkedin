@@ -207,8 +207,9 @@ input[type=range]{accent-color:var(--acc);width:160px}
   <div class="tab" onclick="switchTab(3)">🔬 Stability</div>
   <div class="tab" onclick="switchTab(4)">📅 History</div>
   <div class="tab" onclick="switchTab(5)">🏆 Team Builder</div>
-  <div class="tab" onclick="switchTab(6)">📖 How It Works</div>
-  <div class="tab" onclick="switchTab(7)">👤 My Team</div>
+  <div class="tab" onclick="switchTab(6)">👤 My Team</div>
+  <div class="tab" onclick="switchTab(7)">🛡️ Defense</div>
+  <div class="tab" onclick="switchTab(8)">📖 How It Works</div>
 </div>
 <div class="content">
 <div class="panel active" id="p0">
@@ -344,6 +345,71 @@ input[type=range]{accent-color:var(--acc);width:160px}
   </div>
 </div>
 </div>
+<div class="panel" id="p7">
+<div style="max-width:960px;margin:0 auto;padding:8px 0 40px">
+
+  <!-- Search bar -->
+  <div style="position:relative;margin-bottom:20px">
+    <input id="mt-search" type="text" placeholder="🔍 חפש שחקן להוספה לקבוצה..."
+      oninput="renderMTSearch()" onfocus="renderMTSearch()"
+      style="width:100%;box-sizing:border-box;padding:11px 16px;background:var(--surf);
+             border:1px solid var(--brd);border-radius:10px;color:var(--txt);
+             font-size:14px;outline:none">
+    <div id="mt-results" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
+      background:var(--surf);border:1px solid var(--brd);border-radius:10px;
+      z-index:300;max-height:340px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)"></div>
+  </div>
+
+  <!-- Score summary -->
+  <div id="mt-score" style="margin-bottom:20px"></div>
+
+  <!-- Team grid -->
+  <div class="team-grid">
+    <div class="team-section">
+      <div class="sec-title">⭐ חמישיה ראשונה (6)</div>
+      <div id="mt-starters"></div>
+    </div>
+    <div class="team-section">
+      <div class="sec-title">🪑 ספסל × 0.5 (4)</div>
+      <div id="mt-bench"></div>
+    </div>
+  </div>
+
+  <!-- Clear button -->
+  <div style="margin-top:16px;text-align:center">
+    <button onclick="clearMyTeam()"
+      style="padding:7px 20px;background:transparent;border:1px solid #ef4444;
+             color:#ef4444;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">
+      🗑 נקה קבוצה
+    </button>
+  </div>
+
+</div>
+</div>
+
+<div class="panel" id="p8">
+<div style="max-width:720px;margin:0 auto;padding:16px 0 40px">
+  <h2 id="dvp-tab-title" style="font-size:20px;font-weight:800;color:var(--txt);margin-bottom:4px">🛡️ ציון הגנתי לפי קבוצה</h2>
+  <div style="color:var(--txt2);font-size:13px;margin-bottom:16px">כמה קל/קשה לעשות נקודות פנטזי נגד כל קבוצה לפי פוזיציה · Blended DvP (60% last-10 + 40% עונה) · ממוין מהקלה לקשה</div>
+  <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(22,163,74,.2);color:#4ade80;border:1px solid rgba(22,163,74,.4)">EASY — הגנה חלשה</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(101,163,13,.2);color:#a3e635;border:1px solid rgba(101,163,13,.4)">FAVORABLE</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(234,88,12,.2);color:#fb923c;border:1px solid rgba(234,88,12,.4)">TOUGH</span>
+    <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:rgba(220,38,38,.2);color:#f87171;border:1px solid rgba(220,38,38,.4)">HARD — הגנה חזקה</span>
+  </div>
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr>
+        <th style="background:var(--surf2);color:var(--txt2);font-size:11px;font-weight:700;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:2px solid var(--brd)">קבוצה</th>
+        <th style="background:var(--surf2);color:var(--txt2);font-size:11px;font-weight:700;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:2px solid var(--brd)">הגנה לפי פוזיציה</th>
+        <th style="background:var(--surf2);color:var(--txt2);font-size:11px;font-weight:700;text-transform:uppercase;padding:8px 12px;text-align:left;border-bottom:2px solid var(--brd)">ציון כולל</th>
+      </tr>
+    </thead>
+    <tbody id="dvp-tbody"></tbody>
+  </table>
+</div>
+</div>
+
 <div class="panel" id="p6">
 <div style="max-width:860px;margin:0 auto;padding:8px 0 40px">
 
@@ -444,47 +510,6 @@ input[type=range]{accent-color:var(--acc);width:160px}
 
 </div>
 </div>
-<div class="panel" id="p7">
-<div style="max-width:960px;margin:0 auto;padding:8px 0 40px">
-
-  <!-- Search bar -->
-  <div style="position:relative;margin-bottom:20px">
-    <input id="mt-search" type="text" placeholder="🔍 חפש שחקן להוספה לקבוצה..."
-      oninput="renderMTSearch()" onfocus="renderMTSearch()"
-      style="width:100%;box-sizing:border-box;padding:11px 16px;background:var(--surf);
-             border:1px solid var(--brd);border-radius:10px;color:var(--txt);
-             font-size:14px;outline:none">
-    <div id="mt-results" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;
-      background:var(--surf);border:1px solid var(--brd);border-radius:10px;
-      z-index:300;max-height:340px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)"></div>
-  </div>
-
-  <!-- Score summary -->
-  <div id="mt-score" style="margin-bottom:20px"></div>
-
-  <!-- Team grid -->
-  <div class="team-grid">
-    <div class="team-section">
-      <div class="sec-title">⭐ חמישיה ראשונה (6)</div>
-      <div id="mt-starters"></div>
-    </div>
-    <div class="team-section">
-      <div class="sec-title">🪑 ספסל × 0.5 (4)</div>
-      <div id="mt-bench"></div>
-    </div>
-  </div>
-
-  <!-- Clear button -->
-  <div style="margin-top:16px;text-align:center">
-    <button onclick="clearMyTeam()"
-      style="padding:7px 20px;background:transparent;border:1px solid #ef4444;
-             color:#ef4444;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">
-      🗑 נקה קבוצה
-    </button>
-  </div>
-
-</div>
-</div>
 <div class="spotlight" id="spotlight">
   <button class="sp-close" onclick="clearSelection()">✕</button>
   <div id="sp-content"></div>
@@ -503,6 +528,8 @@ const RI = {'STRONG BUY':'🚀','BUY':'✅','PREMIUM':'👑','WATCH':'👀','HOL
   var el = document.getElementById('round-sub');
   if (el) el.textContent = 'Round ' + ROUND + ' · Season 2025/26 · ' + activePlayers + ' active players';
   document.title = '🏀 EuroLeague Fantasy · Round ' + ROUND;
+  var dvpT=document.getElementById('dvp-tab-title');
+  if(dvpT) dvpT.textContent='🛡️ ציון הגנתי לפי קבוצה — אחרי מחזור '+ROUND;
 })();
 
 const RECS = ['STRONG BUY','BUY','PREMIUM','WATCH','HOLD','CAUTION','SELL','INACTIVE','INJURED','RETURNING'];
@@ -682,6 +709,7 @@ function switchTab(i){
   document.querySelectorAll('.panel').forEach((p,j)=>p.classList.toggle('active',i===j));
   if(!chartsBuilt && i>=1 && i<=3){chartsBuilt=true;buildCharts();}
   if(i===4) buildHistoryTab();
+  if(i===7) buildDvpTab();
 }
 
 function buildCharts(){
