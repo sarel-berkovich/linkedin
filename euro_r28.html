@@ -188,7 +188,7 @@ input[type=range]{accent-color:var(--acc);width:160px}
     <div class="ball">🏀</div>
     <div>
       <h1>EuroLeague Fantasy Dashboard</h1>
-      <div class="sub">Round 28 · Season 2025/26 · 228 active players</div>
+      <div class="sub" id="round-sub">Round 28 · Season 2025/26</div>
     </div>
   </div>
   <div class="chips">
@@ -497,6 +497,14 @@ const TEAMS = ["AS Monaco", "Anadolu Efes Istanbul", "Baskonia Vitoria-Gasteiz",
 
 const RC = {'STRONG BUY':'#10b981','BUY':'#22c55e','PREMIUM':'#f59e0b','WATCH':'#3b82f6','HOLD':'#94a3b8','CAUTION':'#f97316','SELL':'#ef4444','INACTIVE':'#4b5563','N/A':'#374151'};
 const RI = {'STRONG BUY':'🚀','BUY':'✅','PREMIUM':'👑','WATCH':'👀','HOLD':'🤝','CAUTION':'⚠️','SELL':'🔴','INACTIVE':'💤','N/A':'—','INJURED':'🚑','RETURNING':'🔄'};
+// Dynamic header: always shows correct round + active player count
+(function(){
+  const activePlayers = DATA.filter(function(p){return p.Rec !== 'N/A';}).length;
+  var el = document.getElementById('round-sub');
+  if (el) el.textContent = 'Round ' + ROUND + ' · Season 2025/26 · ' + activePlayers + ' active players';
+  document.title = '🏀 EuroLeague Fantasy · Round ' + ROUND;
+})();
+
 const RECS = ['STRONG BUY','BUY','PREMIUM','WATCH','HOLD','CAUTION','SELL','INACTIVE','INJURED','RETURNING'];
 const PLT = {paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',font:{color:'#94a3b8',family:'Segoe UI,system-ui,sans-serif'},xaxis:{gridcolor:'#2a3552',zeroline:false},yaxis:{gridcolor:'#2a3552',zeroline:false},legend:{bgcolor:'rgba(15,22,41,.85)',bordercolor:'#2a3552',borderwidth:1},margin:{t:30,r:20,b:50,l:60},hovermode:'closest'};
 
