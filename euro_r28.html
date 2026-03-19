@@ -926,9 +926,21 @@ function renderHistory(){
 
 // OPTIMIZER
 function calcTeamScore(team){
-  // captain = highest effectiveAdjFPT; starters = next 5; bench = last 4
-  const s=[...team].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-  return effectiveAdjFPT(s[0])*2 + s.slice(1,6).reduce((t,p)=>t+effectiveAdjFPT(p),0) + s.slice(6).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);
+  // Try all valid formations, return best possible score
+  const byPos={G:[],F:[],C:[]};
+  team.forEach(p=>byPos[p.Pos].push(p));
+  ['G','F','C'].forEach(pos=>byPos[pos].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a)));
+  let best=-Infinity;
+  for(const form of VALID_FORMS){
+    const s5=[];
+    for(const [pos,n] of Object.entries(form)) s5.push(...byPos[pos].slice(0,n));
+    const s5set=new Set(s5.map(p=>p.Name));
+    const rem=[...team].filter(p=>!s5set.has(p.Name)).sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+    const s6=[...s5,rem[0]].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+    const score=effectiveAdjFPT(s6[0])*2+s6.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p),0)+rem.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);
+    if(score>best) best=score;
+  }
+  return best;
 }
 
 // Valid starting-5 formations (guard count, forward count, center count)
@@ -1128,10 +1140,20 @@ function buildTeamCard(team,usedCR,budget,rank,formation){
   const mpC={'EASY':'#16a34a','FAVORABLE':'#65a30d','TOUGH':'#ea580c','HARD':'#dc2626'};
   const medals=['🥇','🥈','🥉'];
   const labels=['Best Team','Alternative A','Alternative B'];
-  const sorted=[...team].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-  const captain=sorted[0];
-  // Starting 6 = first 6 by AdjFPT; bench = last 4
-  const starters=sorted.slice(0,6), bench=sorted.slice(6,10);
+  // Formation-aware starter assignment
+  const _byPos={G:[],F:[],C:[]};
+  team.forEach(p=>_byPos[p.Pos].push(p));
+  ['G','F','C'].forEach(pos=>_byPos[pos].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a)));
+  // Use passed formation; fall back to best formation if missing
+  let _form=formation;
+  if(!_form){let _best=-Infinity;for(const f of VALID_FORMS){const _s5=[];for(const[pos,n] of Object.entries(f))_s5.push(..._byPos[pos].slice(0,n));const _r=[...team].filter(p=>!_s5.map(x=>x.Name).includes(p.Name)).sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));const _s6=[..._s5,_r[0]].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));const _sc=effectiveAdjFPT(_s6[0])*2+_s6.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p),0)+_r.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);if(_sc>_best){_best=_sc;_form=f;}}}
+  const _s5=[];
+  for(const [pos,n] of Object.entries(_form)) _s5.push(..._byPos[pos].slice(0,n));
+  const _s5set=new Set(_s5.map(p=>p.Name));
+  const _rem=[...team].filter(p=>!_s5set.has(p.Name)).sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+  const starters=[..._s5,_rem[0]].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+  const bench=_rem.slice(1);
+  const captain=starters[0];
   const capAdjScore=effectiveAdjFPT(captain)*2+starters.slice(1).reduce((s,p)=>s+effectiveAdjFPT(p),0)+bench.reduce((s,p)=>s+effectiveAdjFPT(p)*0.5,0);
   const pct=(usedCR/budget*100).toFixed(0);
   const borderColors=['#f59e0b','#94a3b8','#b45309'];
