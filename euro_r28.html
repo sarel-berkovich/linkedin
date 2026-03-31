@@ -1458,4 +1458,44 @@ loadMyTeam();
 renderMyTeam();
 
 renderTable();
+function buildDvpTab(){
+  if(window._dvpTabBuilt) return;
+  window._dvpTabBuilt=true;
+  const defMap={};
+  DATA.forEach(function(p){
+    if(!p.OppTLA||!p.Matchup||p.Rec==='N/A') return;
+    var t=p.OppTLA;
+    if(!defMap[t]) defMap[t]={tla:t,G:null,F:null,C:null};
+    if(!defMap[t][p.Pos]) defMap[t][p.Pos]=p.Matchup;
+  });
+  var SCORE={EASY:4,FAVORABLE:3,TOUGH:2,HARD:1};
+  var CLR={EASY:'#4ade80',FAVORABLE:'#a3e635',TOUGH:'#fb923c',HARD:'#f87171'};
+  var BG={EASY:'rgba(22,163,74,.2)',FAVORABLE:'rgba(101,163,13,.2)',TOUGH:'rgba(234,88,12,.2)',HARD:'rgba(220,38,38,.2)'};
+  var BRD={EASY:'rgba(22,163,74,.4)',FAVORABLE:'rgba(101,163,13,.4)',TOUGH:'rgba(234,88,12,.4)',HARD:'rgba(220,38,38,.4)'};
+  var teams=Object.values(defMap);
+  teams.forEach(function(t){
+    var sc=[t.G,t.F,t.C].filter(Boolean).map(function(l){return SCORE[l]||0;});
+    t.overall=sc.length?sc.reduce(function(a,b){return a+b;},0)/sc.length:0;
+  });
+  teams.sort(function(a,b){return b.overall-a.overall;});
+  function pill(label,pos){
+    if(!label) return '<span style="color:#4b5563;font-size:11px;padding:3px 8px">'+pos+' —</span>';
+    return '<span style="display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;background:'+BG[label]+';color:'+CLR[label]+';border:1px solid '+BRD[label]+'">'
+      +'<span style="opacity:.7;font-size:10px">'+pos+'</span>'+label+'</span>';
+  }
+  var rows=teams.map(function(t){
+    var pct=t.overall?((t.overall-1)/3*100):0;
+    var bc=t.overall>=3.3?'#4ade80':t.overall>=2.6?'#a3e635':t.overall>=1.8?'#fb923c':'#f87171';
+    return '<tr style="border-bottom:1px solid var(--brd)">'
+      +'<td style="padding:9px 12px;font-weight:700;font-size:13px;color:var(--txt)">'+t.tla+'</td>'
+      +'<td style="padding:9px 12px"><div style="display:flex;gap:5px">'+pill(t.G,'G')+pill(t.F,'F')+pill(t.C,'C')+'</div></td>'
+      +'<td style="padding:9px 12px;min-width:130px"><div style="display:flex;align-items:center;gap:8px">'
+      +'<div style="flex:1;height:6px;background:#1a2035;border-radius:3px;overflow:hidden">'
+      +'<div style="width:'+pct+'%;height:100%;background:'+bc+';border-radius:3px"></div></div>'
+      +'<span style="font-size:12px;font-weight:700;color:'+bc+';width:30px">'+t.overall.toFixed(1)+'</span>'
+      +'</div></td>'+'</tr>';
+  }).join('');
+  document.getElementById('dvp-tbody').innerHTML=rows||'<tr><td colspan="3" style="padding:20px;color:var(--txt2);text-align:center">אין נתוני DvP זמינים</td></tr>';
+}
+
 </script></body></html>
