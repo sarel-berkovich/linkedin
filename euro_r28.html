@@ -926,26 +926,34 @@ function renderHistory(){
 
 // OPTIMIZER
 function calcTeamScore(team){
-  // Try all valid formations, return best possible score
+  // Try all valid starting-6 formations, return best possible score
   const byPos={G:[],F:[],C:[]};
   team.forEach(p=>byPos[p.Pos].push(p));
   ['G','F','C'].forEach(pos=>byPos[pos].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a)));
   let best=-Infinity;
   for(const form of VALID_FORMS){
-    const s5=[];
-    for(const [pos,n] of Object.entries(form)) s5.push(...byPos[pos].slice(0,n));
-    const s5set=new Set(s5.map(p=>p.Name));
-    const rem=[...team].filter(p=>!s5set.has(p.Name)).sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-    const s6=[...s5,rem[0]].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-    const score=effectiveAdjFPT(s6[0])*2+s6.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p),0)+rem.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);
+    if(byPos.G.length<form.G||byPos.F.length<form.F||byPos.C.length<form.C) continue;
+    const s6=[];
+    for(const [pos,n] of Object.entries(form)) s6.push(...byPos[pos].slice(0,n));
+    const s6set=new Set(s6.map(p=>p.Name));
+    const bench=[...team].filter(p=>!s6set.has(p.Name));
+    s6.sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+    const score=effectiveAdjFPT(s6[0])*2+s6.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p),0)+bench.reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);
     if(score>best) best=score;
   }
   return best;
 }
 
-// Valid starting-5 formations (guard count, forward count, center count)
-// Squad total must be 4G + 4F + 2C = 10 players
-const VALID_FORMS=[{G:2,F:2,C:1},{G:1,F:2,C:2},{G:1,F:3,C:1},{G:2,F:1,C:2},{G:3,F:1,C:1}];
+// Valid starting-6 formations: at least 1G + 1F + 1C, sum = 6, squad = 4G+4F+2C
+const VALID_FORMS=[
+  {G:1,F:3,C:2}, // bench: G3 F1 C0
+  {G:1,F:4,C:1}, // bench: G3 F0 C1
+  {G:2,F:2,C:2}, // bench: G2 F2 C0
+  {G:2,F:3,C:1}, // bench: G2 F1 C1
+  {G:3,F:2,C:1}, // bench: G1 F2 C1
+  {G:3,F:1,C:2}, // bench: G1 F3 C0
+  {G:4,F:1,C:1}, // bench: G0 F3 C1
+];
 
 // Sophisticated position-constrained optimizer:
 // - Smart reserve: uses per-position minimum costs (not global minCR)
@@ -1022,49 +1030,47 @@ function findBestTeam(cands, candsByEff, budget, excluded){
   if(minTotal>budget) return null;
 
   for(const form of VALID_FORMS){
-    const remG=4-form.G, remF=4-form.F, remC=2-form.C;
-    const s5min=minFill('G',form.G)+minFill('F',form.F)+minFill('C',form.C);
-    const rem5min=minFill('G',remG)+minFill('F',remF)+minFill('C',remC);
+    const benchG=4-form.G, benchF=4-form.F, benchC=2-form.C;
+    const s6min=minFill('G',form.G)+minFill('F',form.F)+minFill('C',form.C);
+    const b4min=minFill('G',benchG)+minFill('F',benchF)+minFill('C',benchC);
 
     for(const sortedPool of allPools){
       for(let sFrac=0.48; sFrac<=0.92; sFrac+=0.02){
         const sBudget=budget*sFrac;
         const bBudget=budget-sBudget;
-        if(s5min>sBudget) continue;    // impossible for starters
-        if(rem5min>bBudget) continue;  // impossible for bench
+        if(s6min>sBudget) continue;    // impossible for starters
+        if(b4min>bBudget) continue;    // impossible for bench
 
-        // ── Pick starting 5: smart-reserve greedy ──
-        const s5=[]; let s5CR=0; const s5used=new Set();
-        const s5q={G:form.G, F:form.F, C:form.C};
+        // ── Pick starting 6: smart-reserve greedy ──
+        const s6=[]; let s6CR=0; const s6used=new Set();
+        const s6q={G:form.G, F:form.F, C:form.C};
         for(const p of sortedPool){
-          if(s5.length===5) break;
-          if(!s5q[p.Pos]) continue;
-          const remAfter={G:s5q.G,F:s5q.F,C:s5q.C}; remAfter[p.Pos]--;
-          if(s5CR+p.CR+smartReserve(remAfter)<=sBudget){
-            s5.push(p); s5used.add(p.Name); s5CR+=p.CR; s5q[p.Pos]--;
+          if(s6.length===6) break;
+          if(!s6q[p.Pos]) continue;
+          const remAfter={G:s6q.G,F:s6q.F,C:s6q.C}; remAfter[p.Pos]--;
+          if(s6CR+p.CR+smartReserve(remAfter)<=sBudget){
+            s6.push(p); s6used.add(p.Name); s6CR+=p.CR; s6q[p.Pos]--;
           }
         }
-        if(s5.length<5||s5q.G||s5q.F||s5q.C) continue;
+        if(s6.length<6||s6q.G||s6q.F||s6q.C) continue;
 
-        // ── Pick remaining 5: smart-reserve greedy ──
-        const remBudget=(sBudget-s5CR)+bBudget;
-        const rem5=[]; let rem5CR=0;
-        const remQ={G:remG,F:remF,C:remC};
+        // ── Pick bench 4: smart-reserve greedy ──
+        const remBudget=(sBudget-s6CR)+bBudget;
+        const b4=[]; let b4CR=0;
+        const b4q={G:benchG,F:benchF,C:benchC};
         for(const p of sortedPool){
-          if(s5used.has(p.Name)) continue;
-          if(rem5.length===5) break;
-          if(!remQ[p.Pos]) continue;
-          const remAfter={G:remQ.G,F:remQ.F,C:remQ.C}; remAfter[p.Pos]--;
-          if(rem5CR+p.CR+smartReserve(remAfter)<=remBudget){
-            rem5.push(p); rem5CR+=p.CR; remQ[p.Pos]--;
+          if(s6used.has(p.Name)) continue;
+          if(b4.length===4) break;
+          if(!b4q[p.Pos]) continue;
+          const remAfter={G:b4q.G,F:b4q.F,C:b4q.C}; remAfter[p.Pos]--;
+          if(b4CR+p.CR+smartReserve(remAfter)<=remBudget){
+            b4.push(p); b4CR+=p.CR; b4q[p.Pos]--;
           }
         }
-        if(rem5.length<5||remQ.G||remQ.F||remQ.C) continue;
-
-        rem5.sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+        if(b4.length<4||b4q.G||b4q.F||b4q.C) continue;
 
         // ── Upgrade pass: replace cheap players with better ones using slack budget ──
-        const up=tryUpgrade([...s5,...rem5]);
+        const up=tryUpgrade([...s6,...b4]);
         if(up.usedCR>budget) continue;
 
         const score=calcTeamScore(up.players);
@@ -1132,6 +1138,8 @@ function runOptimizer(){
       el.innerHTML=`<p style="color:#ef4444;text-align:center;padding:30px">לא נמצאה קבוצה תקפה בתקציב ${budget} CR.</p>`;
       return;
     }
+    // Guarantee T1 always has highest score
+    results.sort((a,b)=>calcTeamScore(b.players)-calcTeamScore(a.players));
     displayThreeTeams(results,budget);
   },50);
 }
@@ -1146,13 +1154,12 @@ function buildTeamCard(team,usedCR,budget,rank,formation){
   ['G','F','C'].forEach(pos=>_byPos[pos].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a)));
   // Use passed formation; fall back to best formation if missing
   let _form=formation;
-  if(!_form){let _best=-Infinity;for(const f of VALID_FORMS){const _s5=[];for(const[pos,n] of Object.entries(f))_s5.push(..._byPos[pos].slice(0,n));const _r=[...team].filter(p=>!_s5.map(x=>x.Name).includes(p.Name)).sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));const _s6=[..._s5,_r[0]].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));const _sc=effectiveAdjFPT(_s6[0])*2+_s6.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p),0)+_r.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);if(_sc>_best){_best=_sc;_form=f;}}}
-  const _s5=[];
-  for(const [pos,n] of Object.entries(_form)) _s5.push(..._byPos[pos].slice(0,n));
-  const _s5set=new Set(_s5.map(p=>p.Name));
-  const _rem=[...team].filter(p=>!_s5set.has(p.Name)).sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-  const starters=[..._s5,_rem[0]].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
-  const bench=_rem.slice(1);
+  if(!_form){let _best=-Infinity;for(const f of VALID_FORMS){if(_byPos.G.length<f.G||_byPos.F.length<f.F||_byPos.C.length<f.C)continue;const _s6=[];for(const[pos,n] of Object.entries(f))_s6.push(..._byPos[pos].slice(0,n));const _s6set=new Set(_s6.map(x=>x.Name));const _bch=[...team].filter(p=>!_s6set.has(p.Name));_s6.sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));const _sc=effectiveAdjFPT(_s6[0])*2+_s6.slice(1).reduce((t,p)=>t+effectiveAdjFPT(p),0)+_bch.reduce((t,p)=>t+effectiveAdjFPT(p)*0.5,0);if(_sc>_best){_best=_sc;_form=f;}}}
+  const _s6=[];
+  for(const [pos,n] of Object.entries(_form)) _s6.push(..._byPos[pos].slice(0,n));
+  const _s6set=new Set(_s6.map(p=>p.Name));
+  const starters=[..._s6].sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
+  const bench=[...team].filter(p=>!_s6set.has(p.Name)).sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
   const captain=starters[0];
   const capAdjScore=effectiveAdjFPT(captain)*2+starters.slice(1).reduce((s,p)=>s+effectiveAdjFPT(p),0)+bench.reduce((s,p)=>s+effectiveAdjFPT(p)*0.5,0);
   const pct=(usedCR/budget*100).toFixed(0);
@@ -1165,7 +1172,7 @@ function buildTeamCard(team,usedCR,budget,rank,formation){
     <div style="border:2px solid ${borderColors[rank]||'#334155'};border-radius:14px;padding:18px;margin-bottom:22px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
         <div style="font-size:17px;font-weight:800;color:${borderColors[rank]||'var(--acc)'}">${medals[rank]||'·'} ${labels[rank]||'Option '+(rank+1)}</div>
-        ${fLabel?`<div style="font-size:11px;background:#1a2035;border:1px solid #2a3552;border-radius:6px;padding:3px 8px;color:var(--txt2)">Starting 5: ${fLabel}</div>`:''}
+        ${fLabel?`<div style="font-size:11px;background:#1a2035;border:1px solid #2a3552;border-radius:6px;padding:3px 8px;color:var(--txt2)">Starting 6: ${fLabel}</div>`:''}
         <div style="font-size:11px;background:#1a2035;border:1px solid #2a3552;border-radius:6px;padding:3px 8px;color:var(--txt2)">${gC}G · ${fC}F · ${cC}C total</div>
       </div>
       <div class="team-score-box">
