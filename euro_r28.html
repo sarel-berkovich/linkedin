@@ -1081,6 +1081,30 @@ function findBestTeam(cands, candsByEff, budget, excluded){
       }
     }
   }
+  // ── Local search: try every single-player swap until no improvement ──
+  // Guarantees local optimum — no single substitution can improve the score
+  if(bestTeam){
+    let lsTeam=[...bestTeam.players], lsCR=bestTeam.usedCR;
+    let lsScore=calcTeamScore(lsTeam), lsImproved=true;
+    while(lsImproved){
+      lsImproved=false;
+      let bestSwap=-Infinity, bestIdx=-1, bestCand=null, bestNewCR=lsCR;
+      for(let i=0;i<lsTeam.length;i++){
+        const cur=lsTeam[i], avail=budget-lsCR+cur.CR;
+        const names=new Set(lsTeam.map(p=>p.Name));
+        for(const cand of pool){
+          if(cand.Pos!==cur.Pos||names.has(cand.Name)||cand.CR>avail) continue;
+          const tmp=[...lsTeam]; tmp[i]=cand;
+          const ns=calcTeamScore(tmp);
+          if(ns>bestSwap){bestSwap=ns;bestIdx=i;bestCand=cand;bestNewCR=lsCR-cur.CR+cand.CR;}
+        }
+      }
+      if(bestIdx>=0&&bestSwap>lsScore){
+        lsTeam[bestIdx]=bestCand; lsCR=bestNewCR; lsScore=bestSwap; lsImproved=true;
+      }
+    }
+    bestTeam={players:lsTeam,usedCR:lsCR,formation:null};
+  }
   return bestTeam;
 }
 
@@ -1089,7 +1113,7 @@ function runOptimizer(){
   const minFpt=parseFloat(document.getElementById('minfpt-sl').value);
   const maxInac=parseInt(document.getElementById('inac-sl').value);
   const el=document.getElementById('opt-result');
-  el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב 3 קבוצות — חיפוש אופטימום (300 ניסיונות)...</p>';
+  el.innerHTML='<p style="text-align:center;color:var(--txt2);padding:30px">⚡ מחשב 3 קבוצות — חיפוש אופטימום + local search...</p>';
   setTimeout(()=>{
     const cands=DATA.filter(p=>effectiveAdjFPT(p)>=minFpt&&p.GP>=5&&p.RndsSince<=maxInac&&p.Rec!=='N/A'&&OVERRIDES[p.Name]!=='INJURED')
       .sort((a,b)=>effectiveAdjFPT(b)-effectiveAdjFPT(a));
