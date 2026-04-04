@@ -1612,7 +1612,7 @@ function buildMatchupsTab(){
         +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.PTS?p.PTS.toFixed(1):'—')+'</td>'
         +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.REB?p.REB.toFixed(1):'—')+'</td>'
         +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.AST?p.AST.toFixed(1):'—')+'</td>'
-        +'<td style="padding:2px 4px">'+(m?'<span style="font-size:8.5px;padding:1px 4px;border-radius:6px;background:'+mB+';color:'+mC+';font-weight:700">'+m.slice(0,4)+'</span>':'')+adjStr+'</td>'
+        +'<td style="padding:2px 8px 2px 2px;text-align:right;white-space:nowrap">'+(p.AdjFPT!=null?'<span style="font-size:10px;font-weight:700;color:'+mC+'">'+p.AdjFPT.toFixed(1)+'</span>':'')+' '+(m?'<span style="font-size:8px;color:'+mC+';opacity:.8">'+m.slice(0,4)+'</span>':'')+'</td>'
         +'</tr>';
     }).join('');
 
@@ -1625,7 +1625,7 @@ function buildMatchupsTab(){
       +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">PTS</th>'
       +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">REB</th>'
       +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">AST</th>'
-      +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600"></th>'
+      +'<th style="padding:2px 8px 2px 2px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">Adj✦</th>'
       +'</tr></thead>'
       +'<tbody>'+rows+'</tbody></table>';
   }
@@ -1657,7 +1657,7 @@ function buildMatchupsTab(){
       // Two columns
       +'<div style="display:grid;grid-template-columns:1fr 3px 1fr;min-width:0">'
         // Team A
-        +'<div style="min-width:0;overflow:hidden">'
+        +'<div style="min-width:0">'
           +'<div style="padding:5px 8px;background:#0f1629;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">'
             +'<div style="display:flex;align-items:center;gap:5px">'
               +'<span style="font-size:11px;font-weight:800;color:var(--txt)">'+sn(m.nameA)+'</span>'
@@ -1673,7 +1673,7 @@ function buildMatchupsTab(){
         // Divider
         +'<div style="background:var(--brd)"></div>'
         // Team B
-        +'<div style="min-width:0;overflow:hidden">'
+        +'<div style="min-width:0">'
           +'<div style="padding:5px 8px;background:#0f1629;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">'
             +'<div style="display:flex;gap:3px;align-items:center">'
               +'<span style="font-size:8.5px;color:var(--txt2);margin-right:2px">vs</span>'
