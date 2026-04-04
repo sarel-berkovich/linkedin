@@ -415,8 +415,7 @@ input[type=range]{accent-color:var(--acc);width:160px}
 <div style="max-width:1400px;margin:0 auto;padding:8px 0 40px">
   <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin-bottom:4px">🗓️ Next Matchups — Round <span id="matchup-round-num"></span></h2>
   <p style="color:var(--txt2);font-size:12px;margin-bottom:20px">
-    All players per team sorted by season FPT avg · <b style="color:var(--txt)">DEF pills</b> = opponent's defense difficulty per position ·
-    <span style="color:#94a3b8">Minutes &amp; age not available in current data</span>
+    All players per team sorted by season FPT avg · <b style="color:var(--txt)">DEF pills</b> = opponent's defense difficulty per position
   </p>
   <div id="matchups-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
 </div>
@@ -1607,7 +1606,7 @@ function buildMatchupsTab(){
       var rowBg=idx%2===0?'transparent':'rgba(15,22,41,.4)';
       return '<tr style="background:'+rowBg+'">'
         +'<td style="padding:2px 4px;white-space:nowrap"><span style="font-size:9px;font-weight:800;color:'+pC+';background:'+pC+'22;padding:1px 4px;border-radius:3px">'+p.Pos+'</span></td>'
-        +'<td style="padding:2px 4px;font-size:10.5px;color:var(--txt);white-space:nowrap">'+p.Name+inj+'</td>'
+        +'<td style="padding:2px 4px;font-size:10.5px;color:var(--txt);white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis">'+p.Name+inj+'</td>'
         +'<td style="padding:2px 5px;font-size:10.5px;font-weight:700;color:#f59e0b;text-align:right">'+p.FPT.toFixed(1)+'</td>'
         +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:#94a3b8">'+(p.L5?p.L5.toFixed(1):'—')+'</td>'
         +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.PTS?p.PTS.toFixed(1):'—')+'</td>'
@@ -1656,9 +1655,9 @@ function buildMatchupsTab(){
         +'<span style="font-size:9px;color:var(--txt2);font-weight:600">'+m.tlaA+' · '+m.tlaB+'</span>'
       +'</div>'
       // Two columns
-      +'<div style="display:grid;grid-template-columns:1fr 3px 1fr">'
+      +'<div style="display:grid;grid-template-columns:1fr 3px 1fr;min-width:0">'
         // Team A
-        +'<div>'
+        +'<div style="min-width:0;overflow:hidden">'
           +'<div style="padding:5px 8px;background:#0f1629;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">'
             +'<div style="display:flex;align-items:center;gap:5px">'
               +'<span style="font-size:11px;font-weight:800;color:var(--txt)">'+sn(m.nameA)+'</span>'
@@ -1674,7 +1673,7 @@ function buildMatchupsTab(){
         // Divider
         +'<div style="background:var(--brd)"></div>'
         // Team B
-        +'<div>'
+        +'<div style="min-width:0;overflow:hidden">'
           +'<div style="padding:5px 8px;background:#0f1629;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">'
             +'<div style="display:flex;gap:3px;align-items:center">'
               +'<span style="font-size:8.5px;color:var(--txt2);margin-right:2px">vs</span>'
