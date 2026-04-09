@@ -209,7 +209,8 @@ input[type=range]{accent-color:var(--acc);width:160px}
   <div class="tab" onclick="switchTab(5)">🏆 Team Builder</div>
   <div class="tab" onclick="switchTab(6)">👤 My Team</div>
   <div class="tab" onclick="switchTab(7)">🛡️ Defense</div>
-  <div class="tab" onclick="switchTab(8)">📖 How It Works</div>
+  <div class="tab" onclick="switchTab(8)">🗓️ Next Matchups</div>
+  <div class="tab" onclick="switchTab(9)">📖 How It Works</div>
 </div>
 <div class="content">
 <div class="panel active" id="p0">
@@ -409,6 +410,17 @@ input[type=range]{accent-color:var(--acc);width:160px}
   </table>
 </div>
 </div>
+
+<div class="panel" id="p_matchups">
+<div style="max-width:1400px;margin:0 auto;padding:8px 0 40px">
+  <h2 style="font-size:22px;font-weight:800;color:var(--txt);margin-bottom:4px">🗓️ Next Matchups — Round <span id="matchup-round-num"></span></h2>
+  <p style="color:var(--txt2);font-size:12px;margin-bottom:20px">
+    All players per team sorted by season FPT avg · <b style="color:var(--txt)">DEF pills</b> = opponent's defense difficulty per position
+  </p>
+  <div id="matchups-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px"></div>
+</div>
+</div>
+
 
 <div class="panel" id="p6">
 <div style="max-width:860px;margin:0 auto;padding:8px 0 40px">
@@ -709,6 +721,7 @@ function switchTab(i){
   if(!chartsBuilt && i>=1 && i<=3){chartsBuilt=true;buildCharts();}
   if(i===4) buildHistoryTab();
   if(i===7) buildDvpTab();
+  if(i===8) buildMatchupsTab();
 }
 
 function buildCharts(){
@@ -1495,6 +1508,189 @@ function buildDvpTab(){
       +'</div></td>'+'</tr>';
   }).join('');
   document.getElementById('dvp-tbody').innerHTML=rows||'<tr><td colspan="3" style="padding:20px;color:var(--txt2);text-align:center">אין נתוני DvP זמינים</td></tr>';
+}
+
+function buildMatchupsTab(){
+  if(window._matchupsBuilt) return;
+  window._matchupsBuilt=true;
+  document.getElementById('matchup-round-num').textContent=ROUND+1;
+
+  // TLA → full team name (stable for EuroLeague 2025-26 season)
+  const TN={
+    'ASM':'AS Monaco','ASV':'LDLC ASVEL Villeurbanne',
+    'EFS':'Anadolu Efes Istanbul','PAR':'Paris Basketball',
+    'KBA':'Baskonia Vitoria-Gasteiz','MTA':'Maccabi Rapyd Tel Aviv',
+    'BAY':'FC Bayern Munich','VIR':'Virtus Bologna',
+    'EA7':'EA7 Emporio Armani Milan','VBC':'Valencia Basket',
+    'BAR':'FC Barcelona','PAO':'Panathinaikos AKTOR Athens',
+    'OLY':'Olympiacos Piraeus','RMB':'Real Madrid',
+    'CZV':'Crvena Zvezda Meridianbet Belgrade','PBB':'Partizan Mozzart Bet Belgrade',
+    'ZAL':'Zalgiris Kaunas','DUB':'Dubai Basketball',
+    'HTA':'Hapoel IBI Tel Aviv','FBB':'Fenerbahce Beko Istanbul'
+  };
+  const SHORT={
+    'AS Monaco':'Monaco','LDLC ASVEL Villeurbanne':'ASVEL',
+    'Anadolu Efes Istanbul':'Efes','Paris Basketball':'Paris',
+    'Baskonia Vitoria-Gasteiz':'Baskonia','Maccabi Rapyd Tel Aviv':'Maccabi TA',
+    'FC Bayern Munich':'Bayern','Virtus Bologna':'Virtus',
+    'EA7 Emporio Armani Milan':'EA7 Milan','Valencia Basket':'Valencia',
+    'FC Barcelona':'Barcelona','Panathinaikos AKTOR Athens':'Panathinaikos',
+    'Olympiacos Piraeus':'Olympiacos','Real Madrid':'Real Madrid',
+    'Crvena Zvezda Meridianbet Belgrade':'Crvena Zvezda',
+    'Partizan Mozzart Bet Belgrade':'Partizan','Zalgiris Kaunas':'Zalgiris',
+    'Dubai Basketball':'Dubai','Hapoel IBI Tel Aviv':'Hapoel TA',
+    'Fenerbahce Beko Istanbul':'Fenerbahce'
+  };
+  function sn(name){return SHORT[name]||name;}
+
+  // Build byTeam
+  const byTeam={};
+  DATA.forEach(function(p){
+    if(!byTeam[p.Team]) byTeam[p.Team]={oppTLA:p.OppTLA,players:[]};
+    byTeam[p.Team].players.push(p);
+  });
+
+  // Build defMap: tla → {G,F,C matchup labels}
+  // defMap[X].G = how easy Guards find scoring against team X
+  const defMap={};
+  DATA.forEach(function(p){
+    if(!p.OppTLA||!p.Matchup||p.Rec==='N/A') return;
+    var t=p.OppTLA;
+    if(!defMap[t]) defMap[t]={G:null,F:null,C:null};
+    if(!defMap[t][p.Pos]) defMap[t][p.Pos]=p.Matchup;
+  });
+
+  // Build matchup pairs (deduplicated)
+  var seen=new Set(), matchups=[];
+  Object.entries(byTeam).forEach(function([name,info]){
+    if(!info.oppTLA) return;
+    var oppName=TN[info.oppTLA];
+    if(!oppName) return;
+    var key=[name,oppName].sort().join('|');
+    if(seen.has(key)) return;
+    seen.add(key);
+    // tlaA = team A's own TLA = what team B uses to reference A = byTeam[oppName].oppTLA
+    var tlaA=byTeam[oppName]?byTeam[oppName].oppTLA:'???';
+    var tlaB=info.oppTLA;
+    matchups.push({nameA:name,nameB:oppName,tlaA:tlaA,tlaB:tlaB});
+  });
+  matchups.sort(function(a,b){return sn(a.nameA).localeCompare(sn(b.nameA));});
+
+  // Colors
+  var MC={EASY:'#4ade80',FAVORABLE:'#a3e635',TOUGH:'#fb923c',HARD:'#f87171'};
+  var MB={EASY:'rgba(22,163,74,.18)',FAVORABLE:'rgba(101,163,13,.18)',TOUGH:'rgba(234,88,12,.18)',HARD:'rgba(220,38,38,.18)'};
+  var PC={G:'#60a5fa',F:'#a78bfa',C:'#f59e0b'};
+
+  function defPill(tla,pos){
+    var d=defMap[tla]||{};
+    var label=d[pos];
+    if(!label) return '<span style="font-size:9px;padding:1px 5px;border-radius:8px;background:#1a2035;color:#4b5563;font-weight:600">'+pos+' —</span>';
+    return '<span style="font-size:9px;padding:1px 5px;border-radius:8px;background:'+MB[label]+';color:'+MC[label]+';font-weight:700;border:1px solid '+MC[label]+'40">'+pos+' '+label.slice(0,4)+'</span>';
+  }
+  function defPills(tla){return ['G','F','C'].map(function(p){return defPill(tla,p);}).join('');}
+
+  function teamTable(name){
+    if(!byTeam[name]) return '<div style="color:var(--txt2);padding:10px;font-size:11px">No data</div>';
+    var players=byTeam[name].players
+      .filter(function(p){return p.Rec!=='N/A'&&p.FPT>0;})
+      .sort(function(a,b){return b.FPT-a.FPT;});
+
+    var rows=players.map(function(p,idx){
+      var m=p.Matchup;
+      var mC=MC[m]||'#666'; var mB=MB[m]||'transparent';
+      var pC=PC[p.Pos]||'#94a3b8';
+      var rec=effectiveRec(p);
+      var inj=rec==='INJURED'?' 🚑':rec==='RETURNING'?' 🔄':'';
+      var adjStr=p.AdjFPT!=null?'<span style="color:'+mC+';margin-left:2px">✦'+p.AdjFPT.toFixed(1)+'</span>':'';
+      var rowBg=idx%2===0?'transparent':'rgba(15,22,41,.4)';
+      return '<tr style="background:'+rowBg+'">'
+        +'<td style="padding:2px 4px;white-space:nowrap"><span style="font-size:9px;font-weight:800;color:'+pC+';background:'+pC+'22;padding:1px 4px;border-radius:3px">'+p.Pos+'</span></td>'
+        +'<td style="padding:2px 4px;font-size:10.5px;color:var(--txt);white-space:nowrap;max-width:110px;overflow:hidden;text-overflow:ellipsis">'+p.Name+inj+'</td>'
+        +'<td style="padding:2px 5px;font-size:10.5px;font-weight:700;color:#f59e0b;text-align:right">'+p.FPT.toFixed(1)+'</td>'
+        +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:#94a3b8">'+(p.L5?p.L5.toFixed(1):'—')+'</td>'
+        +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.PTS?p.PTS.toFixed(1):'—')+'</td>'
+        +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.REB?p.REB.toFixed(1):'—')+'</td>'
+        +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.AST?p.AST.toFixed(1):'—')+'</td>'
+        +'<td style="padding:2px 8px 2px 2px;text-align:right;white-space:nowrap">'+(p.AdjFPT!=null?'<span style="font-size:10px;font-weight:700;color:'+mC+'">'+p.AdjFPT.toFixed(1)+'</span>':'')+' '+(m?'<span style="font-size:8px;color:'+mC+';opacity:.8">'+m.slice(0,4)+'</span>':'')+'</td>'
+        +'</tr>';
+    }).join('');
+
+    return '<table style="width:100%;border-collapse:collapse">'
+      +'<thead><tr style="border-bottom:1px solid #2a3552">'
+      +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:left"></th>'
+      +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:left">Player</th>'
+      +'<th style="padding:2px 4px;font-size:9px;color:#f59e0b;font-weight:700;text-align:right">FPT</th>'
+      +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">L5</th>'
+      +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">PTS</th>'
+      +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">REB</th>'
+      +'<th style="padding:2px 4px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">AST</th>'
+      +'<th style="padding:2px 8px 2px 2px;font-size:9px;color:var(--txt2);font-weight:600;text-align:right">Adj✦</th>'
+      +'</tr></thead>'
+      +'<tbody>'+rows+'</tbody></table>';
+  }
+
+  function matchupCard(m, idx){
+    var overallA=function(tla){
+      var d=defMap[tla]||{};
+      var s={EASY:4,FAVORABLE:3,TOUGH:2,HARD:1};
+      var vals=[d.G,d.F,d.C].filter(Boolean).map(function(l){return s[l]||0;});
+      return vals.length?vals.reduce(function(a,b){return a+b;},0)/vals.length:0;
+    };
+    var oA=overallA(m.tlaA), oB=overallA(m.tlaB);
+    // Easier opponent = better for fantasy. Show which team faces easier defense.
+    // oA = how defensive team A is (higher = easier to score against A = good for B players)
+    // oB = how defensive team B is (higher = easier to score against B = good for A players)
+    var advA=oB>=oA?'★':' ', advB=oA>oB?'★':' '; // which team has easier opponent
+
+    return '<div style="background:var(--surf);border:1px solid var(--brd);border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.3)">'
+      // Header
+      +'<div style="background:linear-gradient(135deg,#0d1226,#1a2240);border-bottom:2px solid var(--acc)33;padding:7px 12px;display:flex;align-items:center;justify-content:space-between">'
+        +'<span style="font-size:9px;color:var(--txt2);font-weight:600;letter-spacing:.5px">R'+( ROUND+1)+' · G'+(idx+1)+'</span>'
+        +'<span style="font-size:12px;font-weight:900;color:var(--txt)">'
+          +'<span style="color:'+PC.G+'">'+sn(m.nameA)+'</span>'
+          +' <span style="color:var(--acc);margin:0 5px">vs</span> '
+          +'<span style="color:'+PC.F+'">'+sn(m.nameB)+'</span>'
+        +'</span>'
+        +'<span style="font-size:9px;color:var(--txt2);font-weight:600">'+m.tlaA+' · '+m.tlaB+'</span>'
+      +'</div>'
+      // Two columns
+      +'<div style="display:grid;grid-template-columns:1fr 3px 1fr;min-width:0">'
+        // Team A
+        +'<div style="min-width:0">'
+          +'<div style="padding:5px 8px;background:#0f1629;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">'
+            +'<div style="display:flex;align-items:center;gap:5px">'
+              +'<span style="font-size:11px;font-weight:800;color:var(--txt)">'+sn(m.nameA)+'</span>'
+              +(advA==='★'?'<span style="font-size:10px;color:#f59e0b" title="Easier matchup">★</span>':'')
+            +'</div>'
+            +'<div style="display:flex;gap:3px;align-items:center">'
+              +'<span style="font-size:8.5px;color:var(--txt2);margin-right:2px">vs</span>'
+              +defPills(m.tlaB)
+            +'</div>'
+          +'</div>'
+          +'<div style="padding:3px 5px">'+teamTable(m.nameA)+'</div>'
+        +'</div>'
+        // Divider
+        +'<div style="background:var(--brd)"></div>'
+        // Team B
+        +'<div style="min-width:0">'
+          +'<div style="padding:5px 8px;background:#0f1629;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between">'
+            +'<div style="display:flex;gap:3px;align-items:center">'
+              +'<span style="font-size:8.5px;color:var(--txt2);margin-right:2px">vs</span>'
+              +defPills(m.tlaA)
+            +'</div>'
+            +'<div style="display:flex;align-items:center;gap:5px">'
+              +(advB==='★'?'<span style="font-size:10px;color:#f59e0b" title="Easier matchup">★</span>':'')
+              +'<span style="font-size:11px;font-weight:800;color:var(--txt)">'+sn(m.nameB)+'</span>'
+            +'</div>'
+          +'</div>'
+          +'<div style="padding:3px 5px">'+teamTable(m.nameB)+'</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }
+
+  var html=matchups.map(function(m,i){return matchupCard(m,i);}).join('');
+  document.getElementById('matchups-grid').innerHTML=html;
 }
 
 </script></body></html>
