@@ -1519,13 +1519,13 @@ function buildMatchupsTab(){
   // TLA → full team name (stable for EuroLeague 2025-26 season)
   const TN={
     'ASM':'AS Monaco','ASV':'LDLC ASVEL Villeurbanne',
-    'EFS':'Anadolu Efes Istanbul','PAR':'Paris Basketball',
+    'EFS':'Anadolu Efes Istanbul','PAR':'Partizan Mozzart Bet Belgrade',
     'KBA':'Baskonia Vitoria-Gasteiz','MTA':'Maccabi Rapyd Tel Aviv',
     'BAY':'FC Bayern Munich','VIR':'Virtus Bologna',
     'EA7':'EA7 Emporio Armani Milan','VBC':'Valencia Basket',
     'BAR':'FC Barcelona','PAO':'Panathinaikos AKTOR Athens',
     'OLY':'Olympiacos Piraeus','RMB':'Real Madrid',
-    'CZV':'Crvena Zvezda Meridianbet Belgrade','PBB':'Partizan Mozzart Bet Belgrade',
+    'CZV':'Crvena Zvezda Meridianbet Belgrade','PBB':'Paris Basketball',
     'ZAL':'Zalgiris Kaunas','DUB':'Dubai Basketball',
     'HTA':'Hapoel IBI Tel Aviv','FBB':'Fenerbahce Beko Istanbul'
   };
@@ -1544,10 +1544,19 @@ function buildMatchupsTab(){
   };
   function sn(name){return SHORT[name]||name;}
 
-  // Build byTeam
+  // Build byTeam with validation: ensure all players from same team have same OppTLA
   const byTeam={};
   DATA.forEach(function(p){
-    if(!byTeam[p.Team]) byTeam[p.Team]={oppTLA:p.OppTLA,players:[]};
+    if(!byTeam[p.Team]) {
+      byTeam[p.Team]={oppTLA:p.OppTLA,players:[]};
+    } else {
+      // Validate: if we see a different OppTLA for same team, keep the first one (from DvP)
+      // This prevents duplicate matchups from malformed data
+      if(byTeam[p.Team].oppTLA && byTeam[p.Team].oppTLA !== p.OppTLA){
+        // Keep the validated one from DVP, overwrite player's value
+        p.OppTLA = byTeam[p.Team].oppTLA;
+      }
+    }
     byTeam[p.Team].players.push(p);
   });
 
