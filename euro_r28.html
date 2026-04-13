@@ -561,9 +561,11 @@ function effectiveRec(p){
   return p.Rec;
 }
 
+const _srCache=new Map();
 function streakRate(p){
+  if(_srCache.has(p.Name)) return _srCache.get(p.Name);
   const W=p.W||[];
-  if(!W.length) return 0;
+  if(!W.length){_srCache.set(p.Name,0);return 0;}
   const sorted=[...W].sort((a,b)=>a-b);
   const streak=[sorted[sorted.length-1]];
   for(let i=sorted.length-2;i>=0;i--){
@@ -572,7 +574,9 @@ function streakRate(p){
   }
   const minStreak=3;
   const effectiveStart=Math.min(streak[0],ROUND-minStreak+1);
-  return streak.length/(ROUND-effectiveStart+1);
+  const rate=streak.length/(ROUND-effectiveStart+1);
+  _srCache.set(p.Name,rate);
+  return rate;
 }
 
 function effectiveExpFPT(p){
