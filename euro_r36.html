@@ -560,6 +560,20 @@ function effectiveRec(p){
   return p.Rec;
 }
 
+function streakRate(p){
+  const W=p.W||[];
+  if(!W.length) return 0;
+  const sorted=[...W].sort((a,b)=>a-b);
+  const streak=[sorted[sorted.length-1]];
+  for(let i=sorted.length-2;i>=0;i--){
+    if(streak[0]-sorted[i]<=2) streak.unshift(sorted[i]);
+    else break;
+  }
+  const minStreak=3;
+  const effectiveStart=Math.min(streak[0],ROUND-minStreak+1);
+  return streak.length/(ROUND-effectiveStart+1);
+}
+
 function effectiveExpFPT(p){
   if(OVERRIDES[p.Name] === 'INJURED') return 0;
   if(OVERRIDES[p.Name] === 'RETURNING'){
@@ -568,7 +582,7 @@ function effectiveExpFPT(p){
     if(p.RndsSince > 2) return +(p.ExpFPT * 0.82).toFixed(1);
     return +(p.ExpFPT * 0.90).toFixed(1);
   }
-  return p.ExpFPT;
+  return +(p.ExpFPT * streakRate(p)).toFixed(1);
 }
 
 function effectiveAdjFPT(p){
@@ -579,7 +593,7 @@ function effectiveAdjFPT(p){
     if(p.RndsSince > 2) return +(base * 0.82).toFixed(1);
     return +(base * 0.90).toFixed(1);
   }
-  return base;
+  return +(base * streakRate(p)).toFixed(1);
 }
 
 function setOverride(name, status){
@@ -1601,7 +1615,7 @@ function buildMatchupsTab(){
       var pC=PC[p.Pos]||'#94a3b8';
       var rec=effectiveRec(p);
       var inj=rec==='INJURED'?' 🚑':rec==='RETURNING'?' 🔄':'';
-      var adjStr=p.AdjFPT!=null?'<span style="color:'+mC+';margin-left:2px">✦'+p.AdjFPT.toFixed(1)+'</span>':'';
+      var adjStr=effectiveAdjFPT(p)>0?'<span style="color:'+mC+';margin-left:2px">✦'+effectiveAdjFPT(p).toFixed(1)+'</span>':'';
       var rowBg=idx%2===0?'transparent':'rgba(15,22,41,.4)';
       return '<tr style="background:'+rowBg+'">'
         +'<td style="padding:2px 4px;white-space:nowrap"><span style="font-size:9px;font-weight:800;color:'+pC+';background:'+pC+'22;padding:1px 4px;border-radius:3px">'+p.Pos+'</span></td>'
@@ -1611,7 +1625,7 @@ function buildMatchupsTab(){
         +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.PTS?p.PTS.toFixed(1):'—')+'</td>'
         +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.REB?p.REB.toFixed(1):'—')+'</td>'
         +'<td style="padding:2px 4px;font-size:10px;text-align:right;color:var(--txt2)">'+(p.AST?p.AST.toFixed(1):'—')+'</td>'
-        +'<td style="padding:2px 8px 2px 2px;text-align:right;white-space:nowrap">'+(p.AdjFPT!=null?'<span style="font-size:10px;font-weight:700;color:'+mC+'">'+p.AdjFPT.toFixed(1)+'</span>':'')+' '+(m?'<span style="font-size:8px;color:'+mC+';opacity:.8">'+m.slice(0,4)+'</span>':'')+'</td>'
+        +'<td style="padding:2px 8px 2px 2px;text-align:right;white-space:nowrap">'+(effectiveAdjFPT(p)>0?'<span style="font-size:10px;font-weight:700;color:'+mC+'">'+effectiveAdjFPT(p).toFixed(1)+'</span>':'')+' '+(m?'<span style="font-size:8px;color:'+mC+';opacity:.8">'+m.slice(0,4)+'</span>':'')+'</td>'
         +'</tr>';
     }).join('');
 
